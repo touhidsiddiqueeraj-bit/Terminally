@@ -39,6 +39,10 @@ jobs:
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
+        with:
+          # Enables GitHub Pages on the repo (Settings → Pages → Source:
+          # GitHub Actions) on first run, using this workflow's GITHUB_TOKEN.
+          enablement: true
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
