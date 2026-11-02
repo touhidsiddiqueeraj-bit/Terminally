@@ -8,7 +8,9 @@ export function PwaRegister() {
     if (typeof window === "undefined") return;
     if (!("serviceWorker" in navigator)) return;
     const register = () => {
-      navigator.serviceWorker.register("/sw.js").catch(() => {
+      // Relative path so the worker also works when the app is served
+      // from a subdirectory (e.g. GitHub Pages project sites).
+      navigator.serviceWorker.register("sw.js").catch(() => {
         /* offline install unavailable — app still works online */
       });
     };

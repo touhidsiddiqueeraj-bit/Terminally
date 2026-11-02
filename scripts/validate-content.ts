@@ -57,7 +57,6 @@ function checkLesson(courseId: string, lesson: Lesson) {
     }
   } else {
     if (lesson.quiz.length !== 0) errors.push(`${lesson.id}: boss should have empty quiz, has ${lesson.quiz.length}`);
-    const boss = lesson.lesson_boss ?? lesson.boss;
     if (!lesson.boss.stages || lesson.boss.stages.length < 4) errors.push(`${lesson.id}: boss stages ${lesson.boss?.stages?.length}`);
     for (const [si, s] of (lesson.boss.stages ?? []).entries()) {
       if (s.answer < 0 || s.answer >= s.options.length) errors.push(`${lesson.id} boss stage ${si}: answer out of range`);

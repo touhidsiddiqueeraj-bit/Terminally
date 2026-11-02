@@ -32,13 +32,15 @@ export const metadata: Metadata = {
   description:
     "A gamified, offline-first learning system for computer science essentials: how computers work, cryptography, and security in the AI era. Read, quiz, code, fight bosses.",
   applicationName: "Terminal Academy",
-  manifest: "/manifest.webmanifest",
+  // Relative paths so the app works at the domain root AND under a
+  // subdirectory (GitHub Pages project sites, static hosting folders).
+  manifest: "manifest.webmanifest",
   icons: {
     icon: [
-      { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
-      { url: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
+      { url: "icons/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "icons/icon-512.png", sizes: "512x512", type: "image/png" },
     ],
-    apple: "/icons/apple-touch-icon.png",
+    apple: "icons/apple-touch-icon.png",
   },
   appleWebApp: {
     capable: true,

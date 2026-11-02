@@ -52,3 +52,15 @@ prompt
 server.log
 # Skills directory
 /skills/
+
+# sandbox / infra artifacts (not part of the shipped app)
+/.zscripts/
+/examples/
+/tests/
+/db/
+/custom.db
+download/
+Caddyfile
+.z-ai-config
+.claude
+agent-ctx/

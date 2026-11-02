@@ -1268,6 +1268,564 @@ function lockAndUnlock(text, keyByte) {
       ],
     },
     {
+      id: "randomness-and-breaking",
+      title: "Randomness & Cryptanalysis",
+      blurb: "The ingredient every cipher depends on — and the toolbox that breaks the careless.",
+      lessons: [
+        {
+          id: "crp-randomness",
+          title: "Randomness: The Ingredient You Cannot Fake",
+          minutes: 5,
+          xp: 30,
+          concept: [
+            {
+              type: "p",
+              text: "Every secret you have built so far — one-time pads, encryption keys, salts — shares one hidden dependency: unpredictability. A cipher can be mathematically magnificent and still die instantly if its key is guessable. The strongest lock in the world is worthless if the key is under the doormat. This lesson is about doormats.",
+            },
+            { type: "h", text: "Humans are terrible dice" },
+            {
+              type: "p",
+              text: "Ask a room of people to pick a random number from 1 to 100 and a third of them say 7. Ask for random PINs and you get 1234, 1111, and everyone's birthday. Our brains are pattern machines — magnificent at finding order, hopeless at producing its absence. Any 'random' value a human invents by thinking hard is a value an attacker can prioritize guessing.",
+            },
+            { type: "h", text: "Pseudorandom: a formula wearing a mask" },
+            {
+              type: "p",
+              text: "Computers cannot draw randomness from thin air either, so they do something sneaky instead: they run a deterministic formula that produces output that looks random. That is a pseudorandom number generator, or PRNG. You give it a seed, and from that seed it produces an endless stream of numbers that pass every visual test of chaos. Same seed, same stream. Every time. It is a costume, not a coin flip.",
+            },
+            {
+              type: "code",
+              caption: "A tiny PRNG — the whole trick in six lines",
+              code: `function makeRandom(seed) {
+  let state = seed;
+  return function () {
+    state = (state * 1664525 + 1013904223) % 4294967296;
+    return state / 4294967296; // looks random, is not
+  };
+}
+
+const a = makeRandom(42);
+const b = makeRandom(42);
+a() === b(); // true — same seed, same "randomness"`,
+            },
+            {
+              type: "p",
+              text: "For game shuffles and silly animations, that is perfectly fine. For secrets, it is a catastrophe. If an attacker can guess the seed — the time of day you generated it, a counter, anything narrow — then every 'random' key you derived from it tumbles out of the formula like coins from a slot.",
+            },
+            { type: "h", text: "The real thing" },
+            {
+              type: "p",
+              text: "Serious cryptography uses a stricter breed: cryptographically secure pseudorandom number generators, seeded by genuine physical unpredictability — timing jitter in your keystrokes and disk head movements, electrical noise, dedicated hardware entropy sources. Their outputs are not just pattern-free; they remain unpredictable even to an attacker who has already watched a million previous outputs. In the browser, that source is crypto.getRandomValues.",
+            },
+            {
+              type: "callout",
+              variant: "warn",
+              title: "WATCH OUT",
+              text: "Math.random is a PRNG designed for speed, not secrecy. Its output can be predictable enough to matter. Using it for a token, a key, a password reset link or a session ID is a classic real-world vulnerability. For anything secret: crypto.getRandomValues, always.",
+            },
+            {
+              type: "p",
+              text: "Now build the slot machine yourself. The exercise has you implement that tiny PRNG and prove — in your own tests — that same seed means same stream. Watch how un-random randomness can be.",
+            },
+          ],
+          quiz: [
+            {
+              q: "Two PRNGs are seeded with the same value. What do they output?",
+              options: [
+                "Completely different streams",
+                "Identical streams, because a PRNG is a deterministic formula",
+                "The same first number, then they diverge",
+                "Random streams — that is what the R stands for",
+              ],
+              answer: 1,
+              explain:
+                "A pseudorandom generator is deterministic: the seed is the entire secret. Same seed, same sequence, forever. That is exactly why leaked seeds are so dangerous.",
+            },
+            {
+              q: "Why is Math.random disqualified from generating secret keys?",
+              options: [
+                "It is too slow",
+                "It only produces small numbers",
+                "It is a speed-first PRNG whose output can be predictable",
+                "It cannot run twice in the same program",
+              ],
+              answer: 2,
+              explain:
+                "Math.random is built for fast, good-enough chaos in games and visuals. Nothing about it guarantees unpredictability against an attacker, which is the entire job of a key.",
+            },
+            {
+              q: "A CSPRNG like the one behind crypto.getRandomValues is special because...",
+              options: [
+                "it is seeded by physical entropy and stays unpredictable even after you observe many outputs",
+                "it runs faster than Math.random",
+                "it produces only prime numbers",
+                "it never repeats a number in its lifetime",
+              ],
+              answer: 0,
+              explain:
+                "Cryptographic randomness has two demands: seeding from genuine unpredictability, and remaining unguessable even against attackers who have seen earlier outputs. Speed is not the point.",
+            },
+          ],
+          exercise: {
+            prompt: [
+              "Build the tiny PRNG from the lesson and prove how deterministic 'randomness' really is.",
+              "makeRandom(seed) returns a function. Each call advances the state with the formula and returns a number from 0 up to (but not including) 1.",
+              "The formula: state = (state * 1664525 + 1013904223) % 4294967296, then divide by 4294967296.",
+              "The tests will show you: same seed, same stream. Different seeds, different streams.",
+            ],
+            starter: `function makeRandom(seed) {
+  // Keep a state that starts at the seed.
+  // Each call: advance the state with the
+  // formula, then return state / 4294967296.
+  // your code here
+}`,
+            tests: [
+              {
+                name: "same seed, same first value",
+                code: "return makeRandom(42)() === makeRandom(42)();",
+              },
+              {
+                name: "same seed, same second value too",
+                code: "const a = makeRandom(42); const b = makeRandom(42); a(); b(); return a() === b();",
+              },
+              {
+                name: "successive values move",
+                code: "const r = makeRandom(42); const first = r(); return r() !== first;",
+              },
+              {
+                name: "always within [0, 1)",
+                code:
+                  "const r = makeRandom(7); let ok = true; for (let i = 0; i < 100; i++) { const v = r(); if (v < 0 || v >= 1) ok = false; } return ok;",
+              },
+              {
+                name: "different seeds diverge",
+                code: "return makeRandom(1)() !== makeRandom(2)();",
+              },
+            ],
+            solution: `function makeRandom(seed) {
+  let state = seed;
+  return function () {
+    state = (state * 1664525 + 1013904223) % 4294967296;
+    return state / 4294967296;
+  };
+}`,
+            hints: [
+              "The outer function sets up the state; the inner function uses and updates it. This is a closure — the returned function remembers state.",
+              "JavaScript numbers handle these values fine up to 2^53, so the multiply-add-mod arithmetic is safe.",
+              "Return state / 4294967296 so the result lands in [0, 1) — zero included, one excluded.",
+            ],
+          },
+        },
+        {
+          id: "crp-nonce",
+          title: "Nonces: Numbers Used Once",
+          minutes: 5,
+          xp: 30,
+          concept: [
+            {
+              type: "p",
+              text: "You have already met a nonce without hearing the word. The salt you added to passwords in the hashing lesson was one. A nonce — number used once — is any value included in a cryptographic operation precisely so that the result differs every time, even when the input is identical.",
+            },
+            { type: "h", text: "Why sameness is deadly" },
+            {
+              type: "p",
+              text: "Without a nonce, encrypting the same message twice with the same key yields the same ciphertext twice. An eavesdropper does not need to break anything to exploit that: they see two identical envelopes and learn that two identical messages were sent, when, and to whom. Patterns leak. The nonce exists to shred the pattern.",
+            },
+            { type: "h", text: "What happens when nonces repeat" },
+            {
+              type: "p",
+              text: "Reusing a nonce is worse than skipping it. With a one-time pad, reuse is mathematical suicide. If the same pad encrypts two messages, an attacker XORs the two ciphertexts together and the pad cancels out entirely — what remains is the XOR of the two plaintexts. The key has been algebraically deleted, and both messages bleed.",
+            },
+            {
+              type: "code",
+              caption: "The pad cancels itself",
+              code: `c1 = m1 XOR pad
+c2 = m2 XOR pad       // same pad — the fatal mistake
+
+c1 XOR c2 = m1 XOR m2 // the pad vanishes!
+// English XOR English is broken with pencil and paper.`,
+            },
+            {
+              type: "callout",
+              variant: "warn",
+              title: "TRUE STORY",
+              text: "This mistake has taken down giants. A famous game console's master signing key leaked because its code-signing system reused a nonce twice with the same key — researchers XORed the two signatures and the secret fell out. Entire ecosystems have been undone by one repeated number.",
+            },
+            { type: "h", text: "How systems stay unique" },
+            {
+              type: "list",
+              items: [
+                "Counters: message 1, message 2, message 3 — never look back, never repeat.",
+                "Big random nonces: 96 bits or more of CSPRNG output, so collision odds are astronomically small.",
+                "Combination: a fixed device prefix plus a counter, keeping two devices from ever colliding.",
+              ],
+            },
+            {
+              type: "p",
+              text: "The lesson to carry forward: keys get the glory, but nonces do quiet, essential work. When you read about a real-world encryption failure, before long you will find a repeated nonce somewhere in the wreckage.",
+            },
+          ],
+          quiz: [
+            {
+              q: "What is the job of a nonce?",
+              options: [
+                "To make the ciphertext shorter",
+                "To make identical messages produce different ciphertexts each time",
+                "To verify the sender's identity",
+                "To compress the encryption key",
+              ],
+              answer: 1,
+              explain:
+                "A nonce exists to destroy patterns. With a fresh nonce, encrypting the same message twice under the same key gives two unrelated-looking ciphertexts.",
+            },
+            {
+              q: "The same one-time pad encrypts two messages. An attacker XORs the two ciphertexts together. What do they get?",
+              options: [
+                "The pad itself, in the clear",
+                "Nothing but random noise",
+                "The XOR of the two plaintexts — the pad cancels out",
+                "The length of both messages",
+              ],
+              answer: 2,
+              explain:
+                "XOR is self-canceling: pad XOR pad is zero. What survives is m1 XOR m2, and two human-language plaintexts XORed together are recoverable by hand.",
+            },
+            {
+              q: "Which is a sound way for a system to avoid repeating nonces?",
+              options: [
+                "Use the timestamp with second precision",
+                "Use a counter that only moves forward, or a large CSPRNG nonce",
+                "Reuse the salt from password hashing",
+                "Ask the user to type a number",
+              ],
+              answer: 1,
+              explain:
+                "Forward-only counters and large random nonces are the standard answers. Second-precision timestamps repeat across machines and bursts, and humans are terrible dice.",
+            },
+          ],
+        },
+        {
+          id: "crp-frequency",
+          title: "Frequency Analysis: Building the Machine",
+          minutes: 6,
+          xp: 30,
+          concept: [
+            {
+              type: "p",
+              text: "You met frequency analysis as an idea while breaking Caesar: English letters have a fingerprint, and shifting renames the letters without changing the pattern. Now let's build the tool properly — the way an attacker with a keyboard actually does it — because the technique generalizes far beyond Caesar.",
+            },
+            { type: "h", text: "Scoring how English a string looks" },
+            {
+              type: "p",
+              text: "The machine version is a scoring function. Take a candidate decryption and measure the fraction of its characters that land in the common set: e, t, a, o, i, n and the space. Real English is dense with these — typically half or more of all characters. Wrong decryptions are junk strings where common letters appear at random rates, closer to a third.",
+            },
+            {
+              type: "code",
+              caption: "The entire weapon, in nine lines",
+              code: `function englishScore(text) {
+  const common = "etaoin ";
+  let hits = 0;
+  for (const ch of text.toLowerCase()) {
+    if (common.includes(ch)) hits++;
+  }
+  return hits / text.length; // 0.58 looks English. 0.17 does not.
+}`,
+            },
+            { type: "h", text: "Point it at every key" },
+            {
+              type: "p",
+              text: "Now brute force stops requiring eyes. Try all 25 shifts, score each candidate, keep the highest. The computer reads every line for you and reports the one that looks like language. Twenty-five keys fall in milliseconds; the same loop over billions of keys is exactly what modern key sizes are designed to survive.",
+            },
+            {
+              type: "code",
+              caption: "Guess-and-score, automated",
+              code: `let best = { score: -1, shift: 0, text: "" };
+for (let shift = 0; shift < 26; shift++) {
+  const guess = rotate(ciphertext, -shift);
+  const score = englishScore(guess);
+  if (score > best.score) best = { score, shift, text: guess };
+}
+console.log(best.text); // the message, no human reading required`,
+            },
+            { type: "h", text: "Why Vigenère held out longer" },
+            {
+              type: "p",
+              text: "Vigenère blends several shifted alphabets, so the single-letter fingerprint smears across the ciphertext — the simple score stops working. But the key repeats, and repetition is a pattern of its own. Find where the ciphertext agrees with itself, measure the spacing, and the key length falls out; slice the message into columns and each column is just a Caesar again. Vigenère fell to exactly this in the 1860s. The lasting rule: patterns are poison. Any cipher that lets structure survive into its ciphertext is already dead — it just does not know it yet.",
+            },
+            {
+              type: "callout",
+              variant: "ai",
+              title: "AI ERA",
+              text: "englishScore is a blunt instrument — count seven characters, divide. Modern language models score text with billions of learned parameters, which is the same idea taken to its extreme: judge how language-like a string is. Against that, classical ciphers are not merely weak, they are transparent. The only survivors are ciphers designed so the ciphertext carries no structure at all.",
+            },
+          ],
+          quiz: [
+            {
+              q: "In one sentence: what does englishScore measure?",
+              options: [
+                "The length of the text divided by the key size",
+                "The fraction of characters from the most common English letters and space",
+                "How many words appear in a dictionary",
+                "The number of vowels per sentence",
+              ],
+              answer: 1,
+              explain:
+                "It measures the density of common characters. Genuine English is packed with e, t, a, o, i, n and spaces; a wrong decryption reads like random noise and scores much lower.",
+            },
+            {
+              q: "Why does Vigenère resist the simple single-letter score?",
+              options: [
+                "Its keys are too long to guess",
+                "Multiple shifted alphabets smear the letter fingerprint across the ciphertext",
+                "It removes spaces from the message",
+                "It changes the letter frequencies to uniform",
+              ],
+              answer: 1,
+              explain:
+                "Blending several alphabets dilutes the clean E-is-most-common signal. It resists the naive attack — until key repetition leaks the period and each column falls to plain Caesar cracking.",
+            },
+            {
+              q: "Automated cracking — try every key, score each result, keep the best — is dangerous to modern ciphers because...",
+              options: [
+                "it is not; modern ciphers survive it, which is the whole point of modern key sizes",
+                "computers can try 2 to the 128 keys in a weekend",
+                "scoring functions have learned to read any language",
+                "modern ciphers hide their ciphertext length",
+              ],
+              answer: 0,
+              explain:
+                "The guess-and-score loop is exactly what huge key spaces defend against. Twenty-five keys die in milliseconds; a 128-bit space makes the same attack physically hopeless.",
+            },
+          ],
+          exercise: {
+            prompt: [
+              "Build the attacker's tool: a function that scores how English-looking a string is.",
+              "englishScore(text) returns the fraction of characters that are e, t, a, o, i, n or a space, ignoring case. 'hello world' scores 4 out of 11.",
+              "Lowercase everything before counting. An empty string scores 0.",
+              "Watch the final two tests: correct English beats its own Caesar encryption. That is frequency analysis working.",
+            ],
+            starter: `function englishScore(text) {
+  // Count characters from the common set
+  // "etaoin " (case-insensitive), then divide
+  // by the total length.
+  // your code here
+}`,
+            tests: [
+              {
+                name: "'hello world' scores 4/11",
+                code: "return Math.abs(englishScore('hello world') - 4 / 11) < 0.000001;",
+              },
+              {
+                name: "empty text scores 0",
+                code: "return englishScore('') === 0;",
+              },
+              {
+                name: "case is ignored",
+                code: "return englishScore('E T A O I N') === 1;",
+              },
+              {
+                name: "real English beats its Caesar shift",
+                code:
+                  "return englishScore('this is a secret message') > englishScore('wklv lv d vhfuhw phvvdjh');",
+              },
+              {
+                name: "common letters beat rare ones",
+                code: "return englishScore('eeee') > englishScore('qqqq');",
+              },
+            ],
+            solution: `function englishScore(text) {
+  if (text.length === 0) return 0;
+  const common = "etaoin ";
+  let hits = 0;
+  for (const ch of text.toLowerCase()) {
+    if (common.includes(ch)) hits++;
+  }
+  return hits / text.length;
+}`,
+            hints: [
+              "text.toLowerCase() first, then count — the common set is all lowercase.",
+              "A simple loop with common.includes(ch) is all the counting you need.",
+              "Guard against dividing by zero when the text is empty.",
+            ],
+          },
+        },
+        {
+          id: "crp-cryptanalysis",
+          title: "How Ciphers Fall",
+          minutes: 5,
+          xp: 30,
+          concept: [
+            {
+              type: "p",
+              text: "You now own the attacker's basic toolkit: brute force, frequency scoring, and the knowledge that reused randomness is fatal. Time to organize it into the full menu professionals use, and then answer the most important question in this course: why does all of it bounce off modern encryption?",
+            },
+            { type: "h", text: "The attack menu" },
+            {
+              type: "list",
+              items: [
+                "Brute force — try every key. Works when the key space is small, hopeless when it is 128 bits.",
+                "Frequency analysis — hunt the statistical fingerprints of language surviving in the ciphertext.",
+                "Known-plaintext — you already possess a piece of the original message, and even that sliver helps unwind the key. Wartime codebreakers hunted for predictable phrases in enemy traffic — daily weather reports and standard greetings — for exactly this reason.",
+                "Chosen-plaintext — trick the encryption machine into processing text you designed, and study the output. The classic: feed it a message made of one repeated character and read the structure straight out of the result.",
+              ],
+            },
+            { type: "h", text: "Why modern crypto shrugs" },
+            {
+              type: "p",
+              text: "Here is the part beginners find strange: AES has been public since 2001. Its complete design, every step, is published for anyone to read. Twenty-five years of the world's best cryptanalysts poking at it, and the best known practical attack still costs more work than trying every key. Modern ciphers are not safe because they are secret. They are safe because the mathematics of attacking them is expensive — and because generations of experts have failed to make it cheap.",
+            },
+            {
+              type: "p",
+              text: "So attackers do not attack the math. They attack everything around it: keys stored in world-readable files, randomness seeded from the clock, nonces that repeat under load, users phished out of their credentials, code that leaks secrets through how long it takes to run. The cipher is the hardened steel door in a house whose windows are propped open.",
+            },
+            {
+              type: "callout",
+              variant: "tip",
+              title: "THE GOLDEN RULE",
+              text: "Never invent your own cipher. Every hobbyist cipher in history has fallen within months, often to techniques you just learned. Use standard, vetted libraries with standard, vetted algorithms. Originality is a virtue everywhere in computing except cryptography.",
+            },
+            {
+              type: "callout",
+              variant: "ai",
+              title: "AI ERA",
+              text: "Attackers now automate the hunt: bots scan the internet for vulnerable systems in minutes, and AI assists in finding sloppy patterns in leaked code. The defense is the same as it ever was — standard crypto, managed randomness, unique nonces — executed at machine speed too. Update fast, because the attack side certainly does.",
+            },
+          ],
+          quiz: [
+            {
+              q: "What is a known-plaintext attack?",
+              options: [
+                "An attack where you know the cipher's source code",
+                "An attack where you possess part of the original message and use it to help unwind the key",
+                "An attack that only works on plaintexts you chose yourself",
+                "An attack that requires knowing the hash of the message",
+              ],
+              answer: 1,
+              explain:
+                "A sliver of original text plus its ciphertext gives the attacker a foothold. Predictable phrases — greetings, weather formats — handed codebreakers exactly that, repeatedly.",
+            },
+            {
+              q: "Why has nobody broken AES despite its design being public for decades?",
+              options: [
+                "The design is a closely guarded secret",
+                "It is illegal to research",
+                "The best known attacks still cost more work than brute force — the math holds",
+                "It changes its algorithm every year",
+              ],
+              answer: 2,
+              explain:
+                "Openness is the point: decades of public scrutiny with no cheap attack found is the strongest endorsement cryptography knows. Secrecy, by contrast, is where weak ciphers hide.",
+            },
+            {
+              q: "Real-world breaches of systems using strong crypto usually happen because...",
+              options: [
+                "the math finally failed",
+                "attackers attacked the implementation, the randomness, or the humans around it",
+                "computers got faster than expected",
+                "the ciphertext was compressed first",
+              ],
+              answer: 1,
+              explain:
+                "The cipher is rarely the broken link. Keys leak from storage and memory, randomness is seeded predictably, nonces repeat, people are phished. Attack the house, not the steel door.",
+            },
+          ],
+        },
+        {
+          id: "crp-boss-randomness",
+          title: "The Chaos Warden",
+          minutes: 4,
+          xp: 60,
+          concept: [
+            {
+              type: "p",
+              text: "Between you and the Public-Key Revolution stands the Chaos Warden — guardian of randomness, punisher of repeated nonces. It was born from the entropy of a thousand dice rolls and it can smell a predictable seed at forty paces.",
+            },
+            {
+              type: "p",
+              text: "Multiple-choice combat, as always. Every stage correct, or the Warden reshuffles reality and you begin again.",
+            },
+          ],
+          quiz: [],
+          boss: {
+            name: "The Chaos Warden",
+            intro:
+              "The room fills with swirling digits that never repeat. The Chaos Warden coalesces from the noise, flipping a coin that has never once landed. 'Order is easy,' it whispers. 'Show me you understand chaos.'",
+            art: `        ,-------.
+       /  x   x  \\
+      |  \\___/   |
+      |  [=====] |
+       \\  ~~~~~ /
+    .---\\______/---.
+   | 1210011020010 |
+    '=============='
+      ||  ||  ||
+      ==  ==  ==`,
+            stages: [
+              {
+                question: "The Warden flickers: 'Two PRNGs, same seed. Their outputs?'",
+                options: [
+                  "Identical — a PRNG is a deterministic formula in a costume",
+                  "Different — randomness is randomness",
+                  "Identical for numbers, different for strings",
+                  "Undefined behavior",
+                ],
+                answer: 0,
+                explain:
+                  "The seed is the entire secret of a PRNG. Same seed, same stream, forever — which is why guessed seeds sink cryptosystems.",
+              },
+              {
+                question: "It conjures a key: 'Which tool may generate this?'",
+                options: [
+                  "Math.random — fast and battle-tested",
+                  "Date.now — every millisecond differs",
+                  "crypto.getRandomValues — seeded by real entropy, built for secrets",
+                  "A human choosing digits with great effort",
+                ],
+                answer: 2,
+                explain:
+                  "Speed-first PRNGs, clocks, and human-chosen digits are all predictable enough to attack. CSPRNGs exist precisely to be the only acceptable source for keys.",
+              },
+              {
+                question: "The Warden shows two ciphertexts made with one repeated one-time pad. 'XOR them together. What remains?'",
+                options: [
+                  "The pad, plainly visible",
+                  "Pure noise",
+                  "The XOR of the two plaintexts — the key has canceled out",
+                  "The length of the key",
+                ],
+                answer: 2,
+                explain:
+                  "pad XOR pad is zero. What survives is plaintext XOR plaintext, and that is recoverable by hand. One repeated nonce deletes the entire key.",
+              },
+              {
+                question: "'My scoring function,' it hisses, 'counts common letters and divides. What is it?'",
+                options: [
+                  "A checksum",
+                  "Frequency analysis — hunting language's fingerprint in the ciphertext",
+                  "A pseudorandom generator",
+                  "Key stretching",
+                ],
+                answer: 1,
+                explain:
+                  "Measuring how English-like a candidate decryption is: the machine version of the attack that killed Caesar and, eventually, Vigenère.",
+              },
+              {
+                question: "Final challenge: 'Strong cipher, published design, still breached in the real world. What broke?'",
+                options: [
+                  "The math — someone finally solved it",
+                  "Nothing — the story is fake",
+                  "The implementation, the randomness, or the humans around it",
+                  "The publication of the design",
+                ],
+                answer: 2,
+                explain:
+                  "The cipher was the steel door; the attackers came through the windows. Keys leak, seeds are guessed, nonces repeat, people get phished. The math held.",
+              },
+            ],
+          },
+        },
+      ],
+    },
+    {
       id: "public-key",
       title: "Public-Key Revolution",
       blurb: "The 1970s breakthrough that lets strangers keep secrets in the open.",

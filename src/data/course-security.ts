@@ -985,6 +985,520 @@ db.query("SELECT * FROM users WHERE name = ?", [name]);`,
       ],
     },
     {
+      id: "network-defense",
+      title: "Everyday Network Defense",
+      blurb: "Wi-Fi, routers, VPNs and patches — harden the networks your life runs on.",
+      lessons: [
+        {
+          id: "sec-wifi",
+          title: "Public Wi-Fi and Evil Twins",
+          minutes: 5,
+          xp: 30,
+          concept: [
+            {
+              type: "p",
+              text: "The café offers free Wi-Fi and you accept, because everyone does. Here is what that trade really means: an open network is a public park for radio waves. Anyone within a few hundred meters receives everything your phone transmits, and can send your phone anything they like. Using open Wi-Fi is not automatically a disaster — but only because of defenses you are about to understand.",
+            },
+            { type: "h", text: "The evil twin" },
+            {
+              type: "p",
+              text: "The classic attack is not even a break-in. The attacker sets up their own hotspot named 'CoffeeShop_Free_WiFi' — or exactly the same name as the real one — with a strong signal. Your phone, remembering the name from last visit, joins automatically. Now every packet you send lands in the attacker's lap before it reaches the internet. It is called an evil twin, and it costs twenty dollars of hardware.",
+            },
+            {
+              type: "list",
+              items: [
+                "What the twin sees without HTTPS: every plain-http site in full, your DNS lookups (a list of everywhere you go), and unencrypted app traffic.",
+                "What HTTPS protects: the content and destination of each secure connection. The twin still sees roughly how much you transmit.",
+                "What the twin can still try: a fake sign-in page (captive portal) to harvest credentials, and tricking you past a browser certificate warning.",
+              ],
+            },
+            { type: "h", text: "Your defenses" },
+            {
+              type: "list",
+              items: [
+                "Prefer your phone's hotspot and mobile data — it is encrypted by design and cannot be impersonated by a stronger signal.",
+                "Verify the exact network name with staff before joining; turn off auto-join for open networks.",
+                "Treat any sign-in page asking for a password you care about as hostile until proven otherwise.",
+                "Never click through a browser certificate warning on a network you do not control. That warning is the system working.",
+              ],
+            },
+            {
+              type: "callout",
+              variant: "tip",
+              title: "PRO TIP",
+              text: "The single habit that erases most of this chapter: before typing anything sensitive on any network, glance at the address bar. https, correct domain spelling, no warning. That two-second check defeats the evil twin's best moves.",
+            },
+            {
+              type: "p",
+              text: "Your turn to build the checker. The exercise implements the checklist this lesson just taught: a connection is trustworthy only when all three signals agree.",
+            },
+          ],
+          quiz: [
+            {
+              q: "What is an evil twin access point?",
+              options: [
+                "A router that duplicates your home network",
+                "An attacker's hotspot mimicking a legitimate network name to capture your traffic",
+                "A second antenna on the real router",
+                "A Bluetooth device paired twice",
+              ],
+              answer: 1,
+              explain:
+                "It impersonates the real network — often with a stronger signal — so your device hands it your traffic willingly. No password cracking required.",
+            },
+            {
+              q: "On an open network, which of these does HTTPS still protect?",
+              options: [
+                "The full content of unencrypted http sites",
+                "Your DNS lookups",
+                "The content and destination of your secure connections",
+                "The names of all apps you use",
+              ],
+              answer: 2,
+              explain:
+                "HTTPS encrypts both the request and the hostname inside the connection. Plain-http pages, and which domains you resolve, remain visible to the network.",
+            },
+            {
+              q: "Your browser shows a certificate warning on hotel Wi-Fi. The correct move is...",
+              options: [
+                "click through — hotels always have broken certificates",
+                "click through, but avoid typing passwords",
+                "stop: a certificate warning on untrusted Wi-Fi may mean an attacker is intercepting the connection",
+                "switch to a private browser window and continue",
+              ],
+              answer: 2,
+              explain:
+                "That warning is often the only visible sign of a man-in-the-middle. On a network you do not control, it means the connection cannot be trusted — do not proceed.",
+            },
+          ],
+          exercise: {
+            prompt: [
+              "Implement the padlock checklist from this lesson as code.",
+              "isConnectionSecure(connection) takes an object with url, certificateValid and domainMatch. Return true only when ALL three checks pass: the url starts with https://, the certificate is valid, and the domain matches the certificate.",
+              "Fail any single check and the answer is false — a chain is only as strong as its weakest link.",
+            ],
+            starter: `function isConnectionSecure(connection) {
+  // connection.url, connection.certificateValid,
+  // connection.domainMatch — all three must
+  // pass before you return true.
+  // your code here
+}`,
+            tests: [
+              {
+                name: "all three checks pass",
+                code:
+                  "return isConnectionSecure({ url: 'https://example.com', certificateValid: true, domainMatch: true }) === true;",
+              },
+              {
+                name: "plain http fails",
+                code:
+                  "return isConnectionSecure({ url: 'http://example.com', certificateValid: true, domainMatch: true }) === false;",
+              },
+              {
+                name: "invalid certificate fails",
+                code:
+                  "return isConnectionSecure({ url: 'https://example.com', certificateValid: false, domainMatch: true }) === false;",
+              },
+              {
+                name: "domain mismatch fails",
+                code:
+                  "return isConnectionSecure({ url: 'https://evil-copy.com', certificateValid: true, domainMatch: false }) === false;",
+              },
+            ],
+            solution: `function isConnectionSecure(connection) {
+  if (!connection.url.startsWith("https://")) return false;
+  if (!connection.certificateValid) return false;
+  if (!connection.domainMatch) return false;
+  return true;
+}`,
+            hints: [
+              "connection.url.startsWith('https://') checks the scheme — note the two slashes.",
+              "Check each of the three fields in turn, returning false the moment one fails.",
+              "Only when every check passes do you return true.",
+            ],
+          },
+        },
+        {
+          id: "sec-vpn",
+          title: "What a VPN Does — and What It Doesn't",
+          minutes: 5,
+          xp: 30,
+          concept: [
+            {
+              type: "p",
+              text: "Every tech influencer sells one, every tech podcast runs ads for one, and almost nobody explains what the thing actually does. Let's fix that. A VPN — virtual private network — builds an encrypted tunnel from your device to some other network. Your traffic enters the tunnel near you and exits near the VPN company's servers.",
+            },
+            { type: "h", text: "What it genuinely does" },
+            {
+              type: "list",
+              items: [
+                "Hides your traffic from the local network — the café twin and a nosy home router see only an encrypted tunnel to one address.",
+                "Hides your IP address from the sites you visit — they see the VPN company's address instead.",
+                "Lets you reach a private network from outside — the original use: employees reaching office systems from home.",
+              ],
+            },
+            { type: "h", text: "What it absolutely does not do" },
+            {
+              type: "list",
+              items: [
+                "Make you anonymous. You log into services, carry cookies, and get fingerprinted by your browser regardless of IP.",
+                "Stop malware or phishing. The tunnel carries malicious downloads as faithfully as any other traffic.",
+                "Protect data you hand over voluntarily. A VPN cannot encrypt what you type into a website's own forms and upload yourself.",
+                "Fix a site with bad security. If the site leaks its database, no tunnel on your end helps.",
+              ],
+            },
+            {
+              type: "p",
+              text: "Notice the deeper pattern: a VPN MOVES trust, it does not create it. Your ISP and the café network stop seeing your traffic — and the VPN company starts seeing it instead. You have traded 'trust my internet provider' for 'trust this company with a marketing budget'. Sometimes that is a good trade. But it is a trade, not a magic cloak, and a free VPN is a company whose business model you should think about very carefully.",
+            },
+            {
+              type: "callout",
+              variant: "ai",
+              title: "AI ERA",
+              text: "The most common data leak of the decade is not the network — it is the user. Every prompt pasted into a chatbot, every document uploaded to a free AI tool, leaves through the front door with your blessing. No VPN touches that. The tunnel protects the road, not the choices you make at the destination.",
+            },
+          ],
+          quiz: [
+            {
+              q: "With a VPN active, what does the café's Wi-Fi network see about your browsing?",
+              options: [
+                "Every site you visit, in full",
+                "Only an encrypted tunnel to the VPN server — not your traffic's contents or destinations",
+                "Your passwords, because the VPN shares them",
+                "Nothing at all; the VPN makes you invisible",
+              ],
+              answer: 1,
+              explain:
+                "The tunnel starts at your device. The local network sees encrypted blobs to one address, which is the VPN's real, honest value.",
+            },
+            {
+              q: "The VPN company's servers are now in a position to...",
+              options: [
+                "see nothing, by mathematical law",
+                "see the traffic your ISP used to see — trust has moved to them",
+                "control your home router",
+                "read your passwords out of your password manager",
+              ],
+              answer: 1,
+              explain:
+                "A VPN relocates trust rather than eliminating it. The provider can observe your traffic metadata and destinations the way the ISP did before. Choose providers accordingly.",
+            },
+            {
+              q: "Which of these does a VPN NOT protect you from?",
+              options: [
+                "A snooper on the café network reading your traffic",
+                "Your IP address being visible to websites",
+                "Phishing emails and the passwords you type into a fake site",
+                "An employer-style private network being unreachable from home",
+              ],
+              answer: 2,
+              explain:
+                "The tunnel guards the road, not the destination or your decisions. Phishing and voluntarily-uploaded data sail straight through any VPN.",
+            },
+          ],
+        },
+        {
+          id: "sec-router",
+          title: "Fortress Router",
+          minutes: 5,
+          xp: 30,
+          concept: [
+            {
+              type: "p",
+              text: "Your home router is the most important computer you never think about. Every packet from every device you own — phones, laptops, TVs, cameras, that smart speaker in the kitchen — passes through it. Whoever controls the router controls the house: they can watch traffic, redirect it, plant themselves silently in the middle of everything.",
+            },
+            { type: "h", text: "The default-password graveyard" },
+            {
+              type: "p",
+              text: "In 2016, a piece of malware called Mirai scanned the internet for routers, cameras and recorders still wearing their factory logins — admin/admin and friends. It found hundreds of thousands of them, and the resulting botnet knocked major chunks of the internet offline, including Twitter and Netflix, by overwhelming a company that runs the internet's address book. The entire attack ran on equipment whose owners never changed a default password.",
+            },
+            { type: "h", text: "The hardening checklist" },
+            {
+              type: "list",
+              items: [
+                "Change the admin password — the one for the router's settings page. It is NOT the same as your Wi-Fi password, and it is the one that matters most.",
+                "Use WPA3 if available, WPA2 otherwise, with a long passphrase. Never WEP, never 'open'.",
+                "Turn on automatic firmware updates, or check monthly. Router patches close holes exactly like phone patches do.",
+                "Put smart-home gadgets and guest devices on the guest network, away from your computers.",
+                "Disable WPS — the push-button pairing feature — if you do not use it. It has a history of weak implementations.",
+              ],
+            },
+            {
+              type: "callout",
+              variant: "warn",
+              title: "WATCH OUT",
+              text: "Two passwords guard a router: the Wi-Fi password lets devices onto the network, and the admin password opens the router's brain. People change the first and forget the second. Attackers prefer the second. Log into the settings page once, change it to something long and unique, store it in your password manager, and never think about it again.",
+            },
+            {
+              type: "p",
+              text: "One afternoon of this — admin password, WPA3, updates, guest network — and your home network is harder than 95 percent of the networks on earth. It is the best security-per-minute you will ever spend.",
+            },
+          ],
+          quiz: [
+            {
+              q: "How did the Mirai botnet take over hundreds of thousands of devices in 2016?",
+              options: [
+                "It broke modern encryption",
+                "It logged in with factory default passwords that owners never changed",
+                "It needed physical access to each device",
+                "It exploited every router equally, patched or not",
+              ],
+              answer: 1,
+              explain:
+                "Mirai simply tried admin/admin-style credentials against internet-exposed devices. Unchanged defaults turned a planet of gadgets into an attack army.",
+            },
+            {
+              q: "What is the difference between your router's Wi-Fi password and its admin password?",
+              options: [
+                "Nothing — they are the same password",
+                "The Wi-Fi password lets devices join the network; the admin password opens the router's own settings",
+                "The admin password is only for the internet company",
+                "The Wi-Fi password controls the firmware updates",
+              ],
+              answer: 1,
+              explain:
+                "Joining the network and commanding the router are different powers. The admin password is the master key — it must be unique and strong.",
+            },
+            {
+              q: "Why put smart-home gadgets on the guest network?",
+              options: [
+                "Guest networks are faster",
+                "It isolates cheap, poorly-updated devices away from your computers, so a hacked camera cannot easily reach them",
+                "Smart devices cannot see passwords on the main network",
+                "It doubles your internet speed",
+              ],
+              answer: 1,
+              explain:
+                "IoT devices are the weakest residents of any home — rarely patched, often shoddily secured. Segmentation means their compromise does not become your laptop's compromise.",
+            },
+          ],
+        },
+        {
+          id: "sec-hygiene",
+          title: "The Update Pipeline",
+          minutes: 5,
+          xp: 30,
+          concept: [
+            {
+              type: "p",
+              text: "Every patch you are offered closes a hole that attackers already know about. That is the part people miss: by the time an update exists, the race is already running. Security researchers or attackers found the flaw; the vendor fixed it; the fix is public knowledge — which means everyone now knows the hole exists, including people who did not patch.",
+            },
+            {
+              type: "p",
+              text: "In 2017, a known vulnerability in a widely-used server component had a fix available for two months. Equifax never applied it. Attackers walked through the gap and took the personal data of about 147 million people. The breach did not require genius. It required one missing update.",
+            },
+            { type: "h", text: "Zero-days and the scan race" },
+            {
+              type: "p",
+              text: "A zero-day is a hole with no patch available yet — the vendor has had zero days to fix it. You cannot fully defend against those as an individual. But the overwhelming majority of real-world attacks do not use zero-days. They use old, known, already-patched holes, because scanning the entire internet for unpatched victims is free and automated. Attackers do not need to pick your lock when half the street leaves doors open.",
+            },
+            { type: "h", text: "When the good guys are compromised" },
+            {
+              type: "p",
+              text: "There is a darker level: supply chain attacks. In 2020, attackers slipped their code into a trusted software company's own update pipeline — and thousands of organizations installed the attackers' code through the very mechanism that existed to keep them safe. Updating remains essential; it is still the best odds you can buy. But it teaches the final lesson of this course: perfect security does not exist. There is only risk, reduced, by habit.",
+            },
+            {
+              type: "list",
+              items: [
+                "Automatic updates ON for your operating system, browser and phone. This single setting defeats the majority of automated attacks.",
+                "Restart when asked — many patches do not finish installing until you do.",
+                "Replace devices that no longer receive updates. An unpatched device is a standing invitation.",
+                "Patch internet-facing gear first — routers, servers, anything reachable from outside.",
+              ],
+            },
+            {
+              type: "callout",
+              variant: "ai",
+              title: "AI ERA",
+              text: "The scan race has gone machine-speed. Automated systems find newly-vulnerable devices within minutes of a flaw becoming known, and AI tooling writes exploit attempts faster than ever. The defense is not heroic — it is defaults. Automatic updates mean your machines patch at machine speed too, while you sleep.",
+            },
+            {
+              type: "p",
+              text: "The exercise turns you into the patch scheduler: given a pile of vulnerabilities, decide what gets fixed first. Risk equals severity times exposure.",
+            },
+          ],
+          quiz: [
+            {
+              q: "Why is skipping updates dangerous even if you 'do nothing risky'?",
+              options: [
+                "Updates slow the computer down",
+                "Once a fix is published, the hole it closes is public knowledge, and scanning for unpatched systems is automated and free",
+                "Old software loses features",
+                "Attackers can only exploit patched systems",
+              ],
+              answer: 1,
+              explain:
+                "Unpatched software is a publicly documented open door, and bots sweep the internet for open doors continuously. Doing nothing risky yourself does not matter — the scanning comes to you.",
+            },
+            {
+              q: "What is a zero-day?",
+              options: [
+                "A vulnerability with no patch available yet — the vendor has had zero days to fix it",
+                "An update released on day zero",
+                "A password reset link that expires",
+                "A network scan that lasts one day",
+              ],
+              answer: 0,
+              explain:
+                "Zero-days are the holes nobody can have patched yet. Rare, expensive, and mostly irrelevant to individuals compared to the far more common unpatched known hole.",
+            },
+            {
+              q: "What did the 2020 supply-chain attack demonstrate?",
+              options: [
+                "That updates are useless and should be avoided",
+                "That even trusted update channels can carry attacker code — updating is still essential, but nothing is absolute",
+                "That only governments get hacked",
+                "That antivirus software catches everything",
+              ],
+              answer: 1,
+              explain:
+                "It poisoned the update pipeline itself. The lesson is calibrated paranoia: keep patching — it remains your best odds — while accepting that no habit buys perfection.",
+            },
+          ],
+          exercise: {
+            prompt: [
+              "You are the patch scheduler. Vulnerabilities arrive as objects with id, severity (1 to 10) and exposed (true if reachable from the internet).",
+              "patchPriority(list) must return the ids ordered: highest severity first, and when severity ties, internet-exposed ones before internal ones.",
+              "Do not mutate the input list.",
+            ],
+            starter: `function patchPriority(vulnerabilities) {
+  // Sort a COPY: severity descending,
+  // ties broken by exposed (true) first.
+  // Return just the ids.
+  // your code here
+}`,
+            tests: [
+              {
+                name: "severity rules",
+                code:
+                  "return JSON.stringify(patchPriority([{ id: 'a', severity: 5, exposed: true }, { id: 'b', severity: 9, exposed: false }])) === JSON.stringify(['b', 'a']);",
+              },
+              {
+                name: "ties go to exposed",
+                code:
+                  "return JSON.stringify(patchPriority([{ id: 'x', severity: 7, exposed: false }, { id: 'y', severity: 7, exposed: true }])) === JSON.stringify(['y', 'x']);",
+              },
+              {
+                name: "input not mutated",
+                code:
+                  "const input = [{ id: 'a', severity: 5, exposed: true }, { id: 'b', severity: 9, exposed: false }]; patchPriority(input); return input[0].id === 'a';",
+              },
+              {
+                name: "empty list is empty",
+                code: "return JSON.stringify(patchPriority([])) === JSON.stringify([]);",
+              },
+            ],
+            solution: `function patchPriority(vulnerabilities) {
+  const copy = [...vulnerabilities];
+  copy.sort((a, b) => {
+    if (b.severity !== a.severity) return b.severity - a.severity;
+    return (b.exposed ? 1 : 0) - (a.exposed ? 1 : 0);
+  });
+  return copy.map((v) => v.id);
+}`,
+            hints: [
+              "Copy first — [...list] — so the sort does not touch the original. The test checks for this.",
+              "sort's comparator returns a positive number when a should come AFTER b. For severity descending: b.severity - a.severity.",
+              "For the tie-break, convert the boolean to a number: (b.exposed ? 1 : 0) - (a.exposed ? 1 : 0).",
+            ],
+          },
+        },
+        {
+          id: "sec-boss-network",
+          title: "The Router Wraith",
+          minutes: 4,
+          xp: 60,
+          concept: [
+            {
+              type: "p",
+              text: "The final gate of this chapter haunts the wiring of the building itself. The Router Wraith lives between the walls, in the access points and the firmware, and it has devoured whole households that left their defaults unchanged.",
+            },
+            {
+              type: "p",
+              text: "Combat as usual: multiple choice, every stage correct. The Wraith respects nothing except right answers.",
+            },
+          ],
+          quiz: [],
+          boss: {
+            name: "The Router Wraith",
+            intro:
+              "Lights flicker. Every screen in the room shows the same default password. The Wraith seeps from the ethernet port, antennae crowned in static. 'Your house has a front door,' it crackles. 'Show me you know how to hold it.'",
+            art: `      ,-------------.
+     |((  o   o  ))|
+     |  \\  ___ /  |
+     |   [=====]  |
+      '-----------'
+    _/  /|     |\\  \\_
+   |__/ | ... | \\__|
+    ====   =s=   ====
+        [  WPA3  ]`,
+            stages: [
+              {
+                question: "The Wraith broadcasts a perfect copy of the café's network name. 'What am I?'",
+                options: [
+                  "A DNS poisoning attack",
+                  "An evil twin access point, waiting for your device to auto-join",
+                  "A firmware update",
+                  "A VPN",
+                ],
+                answer: 1,
+                explain:
+                  "Evil twins impersonate real networks — often with a stronger signal — and collect everything careless devices transmit to them.",
+              },
+              {
+                question: "It shows you a login page on http://, with a certificate warning when you try https. 'Proceed?'",
+                options: [
+                  "Yes — certificate warnings are usually glitches",
+                  "Yes, in a private window",
+                  "No — on an untrusted network that warning may be the only sign of an interceptor",
+                  "Yes, after disabling Wi-Fi",
+                ],
+                answer: 2,
+                explain:
+                  "Certificate failures on hostile networks are frequently man-in-the-middle attacks in progress. The warning is the defense working. Heed it.",
+              },
+              {
+                question: "'My ads promised anonymity,' the Wraith grins. 'What does a VPN actually give you?'",
+                options: [
+                  "Anonymity from everything",
+                  "An encrypted tunnel that hides traffic from the local network and your IP from sites — nothing more",
+                  "Protection from phishing",
+                  "Immunity to malware",
+                ],
+                answer: 1,
+                explain:
+                  "A VPN relocates trust from your ISP and local network to the VPN provider. It is a tunnel, not a cloak — phishing, malware and volunteered data pass straight through.",
+              },
+              {
+                question: "The Wraith asks how it enslaved its army of gadgets in 2016. You answer:",
+                options: [
+                  "Quantum decryption",
+                  "Factory default passwords that nobody changed",
+                  "Phishing emails to each device",
+                  "Stealing the routers physically",
+                ],
+                answer: 1,
+                explain:
+                  "Mirai scanned for default credentials and found them by the hundred thousand. The lesson: change the admin password on everything you own.",
+              },
+              {
+                question: "Final stage. 'Ten vulnerabilities, one engineer, one afternoon. Patch in what order?'",
+                options: [
+                  "Alphabetical by id",
+                  "Oldest systems first",
+                  "Highest severity first, and among equals, the internet-exposed ones",
+                  "Whichever is closest to the coffee machine",
+                ],
+                answer: 2,
+                explain:
+                  "Risk is severity times exposure. The internet-facing, most severe hole is the one bots are already scanning for — that is where the afternoon goes.",
+              },
+            ],
+          },
+        },
+      ],
+    },
+    {
       id: "ai-era-privacy",
       title: "Privacy in the AI Era",
       blurb: "Your data is valuable. Act like it.",

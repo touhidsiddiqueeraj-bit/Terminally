@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="315" viewBox="0 0 1200 315" role="img" aria-label="Terminally — Terminal Academy banner">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#060a08"/>
+      <stop offset="1" stop-color="#0b1510"/>
+    </linearGradient>
+    <linearGradient id="scan" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#22e394" stop-opacity="0.05"/>
+      <stop offset="1" stop-color="#22e394" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="5" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <rect width="1200" height="315" fill="url(#bg)"/>
+  <rect width="1200" height="315" fill="url(#scan)"/>
+
+  <!-- terminal window -->
+  <rect x="42" y="32" width="1116" height="251" rx="14" fill="#080d0a" stroke="#1c2a22" stroke-width="2"/>
+  <path d="M42 46 a14 14 0 0 1 14 -14 h1088 a14 14 0 0 1 14 14 v28 H42 Z" fill="#0b120e"/>
+  <circle cx="72" cy="53" r="7" fill="#ff5f56"/>
+  <circle cx="96" cy="53" r="7" fill="#ffbd2e"/>
+  <circle cx="120" cy="53" r="7" fill="#27c93f"/>
+  <text x="146" y="58" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="15" fill="#4b6357">terminally — learn-cs — 80×24</text>
+
+  <!-- prompt line -->
+  <text x="78" y="128" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="23" fill="#8fa89b">
+    <tspan fill="#22e394">$</tspan> ./start --era=ai --offline --gamified
+  </text>
+
+  <!-- title -->
+  <text x="76" y="196" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="60" font-weight="bold" fill="#22e394" filter="url(#glow)">TERMINAL_ACADEMY</text>
+
+  <!-- subtitle -->
+  <text x="78" y="238" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="19" fill="#8fa89b">computer science fundamentals · cryptography · security — for the post-AI era</text>
+
+  <!-- course chips -->
+  <g font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="14">
+    <rect x="78" y="252" width="176" height="22" rx="6" fill="#22e394" fill-opacity="0.12" stroke="#22e394" stroke-opacity="0.5"/>
+    <text x="92" y="267" fill="#22e394">01 foundations</text>
+    <rect x="266" y="252" width="170" height="22" rx="6" fill="#a78bfa" fill-opacity="0.10" stroke="#a78bfa" stroke-opacity="0.5"/>
+    <text x="280" y="267" fill="#a78bfa">02 cryptography</text>
+    <rect x="448" y="252" width="128" height="22" rx="6" fill="#fbbf24" fill-opacity="0.10" stroke="#fbbf24" stroke-opacity="0.5"/>
+    <text x="462" y="267" fill="#fbbf24">03 security</text>
+  </g>
+
+  <!-- caret -->
+  <rect x="1090" y="240" width="14" height="26" fill="#22e394" filter="url(#glow)"/>
+</svg>

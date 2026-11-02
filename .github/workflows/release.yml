@@ -1,0 +1,52 @@
+name: Release
+
+# Publishing a tag (v1.0.0, …) builds the static site and the ready-to-open
+# Android project, and attaches both to a GitHub Release.
+#
+#   git tag v1.0.0 && git push origin v1.0.0
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build & publish release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Validate content before packaging
+        run: |
+          bun run validate:content
+          bun run verify:exercises
+
+      - name: Build static export
+        run: bun run build:static
+
+      - name: Package site zip
+        run: cd out && zip -qr "../terminally-site-${{ github.ref_name }}.zip" . && cd ..
+
+      - name: Sync assets into Android project
+        run: ./android/sync-assets.sh
+
+      - name: Package Android project zip
+        run: zip -qr "terminally-android-project-${{ github.ref_name }}.zip" android -x "android/.gradle/*"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            terminally-site-${{ github.ref_name }}.zip
+            terminally-android-project-${{ github.ref_name }}.zip

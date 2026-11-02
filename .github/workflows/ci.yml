@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  quality:
+    name: Lint · Types · Content · Exercises · Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Lint
+        run: bun run lint
+
+      - name: Typecheck
+        run: bun run typecheck
+
+      - name: Validate course content
+        run: bun run validate:content
+
+      - name: Verify coding exercises
+        run: bun run verify:exercises
+
+      - name: Build static export
+        run: bun run build:static
+
+      - name: Upload site artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: terminally-static-site
+          path: out
+          retention-days: 7

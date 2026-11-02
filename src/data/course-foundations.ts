@@ -1431,5 +1431,550 @@ await fetch("https://terminal.academy.example/scores", {
         },
       ],
     },
+    {
+      id: "data-encoding",
+      title: "Data, Errors & Compression",
+      blurb: "Hex, base64, checksums and squeezing — how data survives the real world.",
+      lessons: [
+        {
+          id: "fnd-hex",
+          title: "Hexadecimal — The Programmer's Shorthand",
+          minutes: 5,
+          xp: 30,
+          concept: [
+            {
+              type: "p",
+              text: "You can now read binary, one bit at a time. But here is the problem: binary is exhausting. The byte 11111111 is eight characters to say one number. Decimal is compact but awkward — 213 tells you nothing about which bits are on. Programmers wanted a middle ground, and they found one that has stuck for sixty years: hexadecimal, usually just called hex.",
+            },
+            { type: "h", text: "Sixteen symbols" },
+            {
+              type: "p",
+              text: "Hexadecimal is base 16. You run out of single digits after 9, so hex borrows six letters: A stands for 10, B for 11, C for 12, D for 13, E for 14 and F for 15. That is the whole alphabet. Sixteen symbols, zero through fifteen.",
+            },
+            {
+              type: "table",
+              headers: ["Hex", "Decimal", "Binary"],
+              rows: [
+                ["0", "0", "0000"],
+                ["9", "9", "1001"],
+                ["A", "10", "1010"],
+                ["C", "12", "1100"],
+                ["F", "15", "1111"],
+              ],
+            },
+            { type: "h", text: "Why programmers swear by it" },
+            {
+              type: "p",
+              text: "Look at that table again and notice something sneaky: four bits — half a byte, called a nibble — express exactly the values 0 to 15. One hex digit expresses exactly the values 0 to 15. They line up perfectly. So one hex digit is always exactly four bits, and one byte is always exactly two hex digits. No guessing, no remainders. FF is 11111111 is 255. The three languages describe the same byte with different amounts of patience.",
+            },
+            {
+              type: "code",
+              caption: "One byte, three languages",
+              code: `// JavaScript speaks all of them
+console.log(0xff);              // 255 — hex literal
+console.log((255).toString(16)); // "ff" — decimal to hex
+console.log(parseInt("ff", 16)); // 255 — hex to decimal`,
+            },
+            {
+              type: "p",
+              text: "You will meet hex constantly from here on. Web colors like #FF6600 are three bytes in hex. Every device's network address is hex. Memory addresses are hex. And when you reach the cryptography course, the fingerprints of keys and hashes will be shown as hex strings — it is the standard costume that raw bytes wear when humans need to look at them.",
+            },
+            {
+              type: "callout",
+              variant: "tip",
+              title: "PRO TIP",
+              text: "Read a hex byte as high nibble, low nibble: 3C is a 3 and a C. The 3 contributes 48 (three sixteens), the C contributes 12. Sixty. With a little practice you convert common bytes in your head, and hex stops looking like a code and starts looking like a number.",
+            },
+            {
+              type: "p",
+              text: "Time to build the conversion yourself. Going from decimal to hex is the mirror of reading binary: instead of halving, you divide by sixteen, over and over, collecting the remainders. Each remainder is one hex digit, from the least significant up.",
+            },
+          ],
+          quiz: [
+            {
+              q: "How many bits does one hexadecimal digit represent?",
+              options: ["2", "4", "8", "16"],
+              answer: 1,
+              explain:
+                "A hex digit expresses 0 to 15, which is exactly the range of four bits — one nibble. That clean fit is the entire reason programmers use hex.",
+            },
+            {
+              q: "What is 0xFF in decimal?",
+              options: ["15", "100", "255", "256"],
+              answer: 2,
+              explain:
+                "F is 15, so FF is fifteen sixteens plus fifteen: 240 + 15 = 255. Two F digits is the largest value one byte can hold.",
+            },
+            {
+              q: "Why do programmers prefer hex over plain binary when eyeballing raw bytes?",
+              options: [
+                "Hex holds more information per byte",
+                "Hex is encrypted for safety",
+                "Hex digits map cleanly to groups of four bits, so it is compact AND easy to convert",
+                "Computers cannot print binary",
+              ],
+              answer: 2,
+              explain:
+                "Binary is precise but bloated; hex is one quarter the length and every digit is exactly one nibble. It is the best of both worlds for humans staring at machine data.",
+            },
+          ],
+          exercise: {
+            prompt: [
+              "Convert decimal numbers into their hex costume — the same job toString(16) does.",
+              "Write decimalToHex(n) so it returns the lowercase hex string for n. decimalToHex(255) must return 'ff'.",
+              "The method: divide n by 16 over and over. Each remainder is the next hex digit, building from the right.",
+              "Careful with zero: decimalToHex(0) should return '0', not an empty string.",
+            ],
+            starter: `function decimalToHex(n) {
+  // Divide by 16 repeatedly; each remainder
+  // becomes a hex digit, right to left.
+  const digits = "0123456789abcdef";
+  // your code here
+}`,
+            tests: [
+              { name: "zero is '0'", code: "return decimalToHex(0) === '0';" },
+              { name: "ten is 'a'", code: "return decimalToHex(10) === 'a';" },
+              { name: "255 is 'ff'", code: "return decimalToHex(255) === 'ff';" },
+              { name: "256 is '100'", code: "return decimalToHex(256) === '100';" },
+              { name: "4096 is '1000'", code: "return decimalToHex(4096) === '1000';" },
+              {
+                name: "a famous hex word",
+                code: "return decimalToHex(3735928559) === 'deadbeef';",
+              },
+            ],
+            solution: `function decimalToHex(n) {
+  const digits = "0123456789abcdef";
+  if (n === 0) return "0";
+  let result = "";
+  while (n > 0) {
+    result = digits[n % 16] + result; // remainder is the next digit
+    n = Math.floor(n / 16);
+  }
+  return result;
+}`,
+            hints: [
+              "Digits come out least-significant first, so put each new digit at the FRONT of the result string.",
+              "The string '0123456789abcdef' is your lookup table: index it with the remainder.",
+              "Loop while n is greater than 0, dividing by 16 each pass — and handle n === 0 before the loop.",
+            ],
+          },
+        },
+        {
+          id: "fnd-base64",
+          title: "Base64 — Text in Disguise",
+          minutes: 5,
+          xp: 30,
+          concept: [
+            {
+              type: "p",
+              text: "Sometimes perfectly good bytes have to travel through places that only understand plain, printable text. Old email systems choked on raw binary. Some URLs and JSON fields refuse bytes that are not ordinary characters. The fix is not encryption — it is a costume called base64: a way to dress any bytes up as safe, boring text.",
+            },
+            { type: "h", text: "The alphabet trick" },
+            {
+              type: "p",
+              text: "Base64 picks sixty-four unproblematic characters: A to Z, a to z, 0 to 9, plus and slash. Then it re-chops your data to speak that alphabet. Take three bytes — twenty-four bits — slice them into four groups of six bits instead. Each six-bit group holds a value from 0 to 63, and that value picks one character from the alphabet. Three bytes in, four characters out.",
+            },
+            {
+              type: "code",
+              caption: "The math of the costume",
+              code: `// 3 bytes = 24 bits = 4 six-bit groups = 4 characters
+// "Man" -> "TWFu" is the textbook example
+
+// JavaScript has it built in:
+console.log(btoa("Hi!"));  // "SGkh" — encode
+console.log(atob("SGkh")); // "Hi!"  — decode`,
+            },
+            {
+              type: "p",
+              text: "If your data is not a tidy multiple of three bytes, the last group comes up short, and base64 pads it with equals signs. That is why base64 strings so often end in one or two of them. You have absolutely seen this: long strings of mixed-case letters ending in equals signs, living in email attachments, data URLs, and configuration files.",
+            },
+            { type: "h", text: "The tax" },
+            {
+              type: "p",
+              text: "Nothing is free. Four characters carry three bytes, so base64 makes data about one third bigger. Fine for a small icon in a CSS file; painful for a two-gigabyte video. That is why base64 is for small payloads and awkward channels, not bulk storage.",
+            },
+            {
+              type: "callout",
+              variant: "warn",
+              title: "WATCH OUT",
+              text: "Base64 is not encryption. There is no key. Anyone can reverse it in one line — you just watched atob do it. Hiding something in base64 is hiding a note by writing it in a different font. In the AI era you will constantly bump into base64 blobs pasted into chats and configs: decode them mentally as 'data in a costume', never as 'protected data'.",
+            },
+            {
+              type: "callout",
+              variant: "ai",
+              title: "AI ERA",
+              text: "When you ask an AI assistant about a weird string, one of the first things it checks is whether the string is base64 — because half the mysteries on the internet turn out to be exactly that: plain data wearing its text costume.",
+            },
+          ],
+          quiz: [
+            {
+              q: "Why does base64 exist at all?",
+              options: [
+                "To encrypt data so only key holders can read it",
+                "To carry arbitrary bytes through channels that only accept plain text",
+                "To make files smaller",
+                "To convert letters into numbers",
+              ],
+              answer: 1,
+              explain:
+                "Base64 is an encoding, not encryption. Its whole job is making binary data safe to pass through text-only pipes like old email systems, URLs and JSON fields.",
+            },
+            {
+              q: "Three bytes go into base64. How many characters come out?",
+              options: ["Two", "Three", "Four", "Six"],
+              answer: 2,
+              explain:
+                "Three bytes are 24 bits. Re-sliced into 6-bit groups that is four groups, and each group becomes one character. Hence the one-third size tax.",
+            },
+            {
+              q: "You find a suspicious file full of mixed-case letters ending in '='. A colleague says it is 'basically encrypted'. They are...",
+              options: [
+                "right — equals signs mark strong encryption",
+                "wrong — base64 has no key and anyone can decode it",
+                "right — only AI can read base64",
+                "wrong — it is actually compressed",
+              ],
+              answer: 1,
+              explain:
+                "That is the classic base64 signature, and base64 is a costume, not a vault. No key exists; atob or any decoder reverses it instantly.",
+            },
+          ],
+        },
+        {
+          id: "fnd-checksums",
+          title: "Checksums — Did Anything Break?",
+          minutes: 5,
+          xp: 30,
+          concept: [
+            {
+              type: "p",
+              text: "Here is an uncomfortable truth: bits flip. A cosmic ray hits a memory chip. A cable picks up electrical noise. A sector of an old drive gets tired. Your photo, your file, your message — any of it can silently corrupt in transit or storage. The question is not whether errors happen, but how the machine ever notices.",
+            },
+            { type: "h", text: "Parity — the one-bit detective" },
+            {
+              type: "p",
+              text: "The oldest trick is beautiful: before sending a byte, count the 1 bits in it and add one extra bit — the parity bit — so the total count is always even. The receiver recounts. Odd total? Something flipped. One extra bit buys you detection of any single flip in that byte. It cannot tell you which bit, and it cannot fix anything — it can only raise its hand.",
+            },
+            { type: "h", text: "Checksums — add it all up" },
+            {
+              type: "p",
+              text: "Parity guards one byte at a time. A checksum guards a whole message: add up every byte in the data and send the total along with it. The receiver repeats the addition and compares. If the sums disagree, the data broke somewhere between here and there. Download pages often publish checksums for exactly this reason — so you can verify your copy matches the original, byte for byte.",
+            },
+            {
+              type: "code",
+              caption: "A toy checksum: sum of all bytes, kept small",
+              code: `function checksum(text) {
+  let sum = 0;
+  for (const ch of text) {
+    sum += ch.charCodeAt(0); // every character is a number
+  }
+  return sum % 256; // keep it to one byte
+}
+
+console.log(checksum("hello")); // 20
+console.log(checksum("helloo")); // 111 — different data, different sum`,
+            },
+            {
+              type: "callout",
+              variant: "info",
+              title: "DEEP DIVE",
+              text: "Real systems use sturdier cousins of this idea. CRC checks mix each byte's position into the math, so scrambled order gets caught. Credit card numbers hide a check digit computed with the Luhn algorithm — type a digit wrong and the card number rejects itself. Barcodes, ISBNs, bank account numbers: check digits are everywhere once you know to look.",
+            },
+            { type: "h", text: "The weakness" },
+            {
+              type: "p",
+              text: "A plain sum has a blind spot: it does not care about order. Add the same numbers in a different order and you get the same total — 'ab' and 'ba' checksum identically. Errors that preserve the sum sail right through. That is why serious systems use mixing, and why the cryptography course will escalate this idea all the way to cryptographic hashes, where finding any two inputs with the same fingerprint is deliberately near-impossible.",
+            },
+            {
+              type: "p",
+              text: "Build the toy version now, and prove the reorder weakness to yourself in the tests.",
+            },
+          ],
+          quiz: [
+            {
+              q: "A parity bit or checksum can do which of the following?",
+              options: [
+                "Repair corrupted data automatically",
+                "Detect that something changed, without saying what changed",
+                "Prevent errors from happening",
+                "Compress the data so errors matter less",
+              ],
+              answer: 1,
+              explain:
+                "These are detection tools, not repair or prevention. They raise a hand when the numbers disagree; recovery means re-requesting or re-reading the data.",
+            },
+            {
+              q: "Why does the toy sum-checksum fail to notice when two letters swap places, as in 'ab' becoming 'ba'?",
+              options: [
+                "Addition is not allowed in checksums",
+                "Sums do not depend on order, so both arrangements add up the same",
+                "Swapped letters always have equal character codes",
+                "The checksum only looks at the first byte",
+              ],
+              answer: 1,
+              explain:
+                "Addition is commutative: same parts, any order, same total. Stronger checks like CRC mix position into the calculation precisely to catch reordering.",
+            },
+            {
+              q: "A download page shows a checksum next to a file link. You compute the checksum of your downloaded copy and it matches. What do you now know?",
+              options: [
+                "The file is free of malware",
+                "The file was encrypted properly",
+                "Your copy almost certainly did not corrupt on the way down",
+                "The file is the newest version",
+              ],
+              answer: 2,
+              explain:
+                "A matching checksum means your bytes match the published bytes — integrity, not safety, secrecy or freshness. It says the copy survived the trip intact.",
+            },
+          ],
+          exercise: {
+            prompt: [
+              "Implement the toy checksum from the lesson: add up every character's code, keep one byte.",
+              "checksum(text) must return the sum of all character codes, modulo 256. checksum('hello') is 20.",
+              "Empty text should checksum to 0.",
+              "The last test proves the reorder weakness: checksum('ab') equals checksum('ba'). Let it pass — that is the lesson.",
+            ],
+            starter: `function checksum(text) {
+  // Add every character's code to a running
+  // total, then keep the total to one byte.
+  // your code here
+}`,
+            tests: [
+              { name: "empty text is 0", code: "return checksum('') === 0;" },
+              { name: "'hello' is 20", code: "return checksum('hello') === 20;" },
+              { name: "'A' is its own code, 65", code: "return checksum('A') === 65;" },
+              {
+                name: "'The quick brown fox' is 19",
+                code: "return checksum('The quick brown fox') === 19;",
+              },
+              {
+                name: "reorder weakness: 'ab' equals 'ba'",
+                code: "return checksum('ab') === checksum('ba');",
+              },
+            ],
+            solution: `function checksum(text) {
+  let sum = 0;
+  for (const ch of text) {
+    sum += ch.charCodeAt(0);
+  }
+  return sum % 256;
+}`,
+            hints: [
+              "Loop over the text with for...of — each ch is a one-character string.",
+              "ch.charCodeAt(0) gives the character's numeric code.",
+              "After the loop, return sum % 256 so the answer always fits in one byte.",
+            ],
+          },
+        },
+        {
+          id: "fnd-compression",
+          title: "Squeezing Data",
+          minutes: 5,
+          xp: 30,
+          concept: [
+            {
+              type: "p",
+              text: "A single 4K photo, stored as raw bytes, would eat around 24 megabytes. Your phone shoots fifty of those in a second. Video at raw size would fill any drive in minutes. The only reason any of this fits anywhere is compression: finding the patterns hiding in data and describing them shorter.",
+            },
+            { type: "h", text: "Two flavors: lossless and lossy" },
+            {
+              type: "list",
+              items: [
+                "Lossless — ZIP files, PNG images: squeeze out the patterns, restore every original byte exactly. For anything where exactness matters: documents, code, spreadsheets.",
+                "Lossy — JPEG images, MP3 audio, video: throw away detail human eyes and ears barely notice, keep the rest. A tenth of the size for a picture that looks basically identical.",
+              ],
+            },
+            { type: "h", text: "Idea one: run-length encoding" },
+            {
+              type: "p",
+              text: "The simplest compression ever invented: when the same symbol repeats, store the count instead of the repeats. A line of 40 identical pixels becomes the number 40 and one pixel. Fantastic for simple graphics — logos, screenshots, anything with long runs of sameness. Useless for photos, where almost nothing repeats.",
+            },
+            {
+              type: "code",
+              caption: "Run-length encoding, the whole idea",
+              code: `"aaaaaabbb"  ->  "6a3b"   // 9 characters become 4
+"abcabcabc"  ->  "1a1b1c1a1b1c1a1b1c"  // oops — grew!
+
+// RLE wins big on long runs, LOSES on data with no runs.
+// Every compressor has a favorite kind of data.`,
+            },
+            { type: "h", text: "Idea two: dictionaries and short codes" },
+            {
+              type: "p",
+              text: "Smarter compressors build a dictionary of chunks that repeat — and here is the twist that makes it powerful — they assign the SHORTEST codes to the most frequent symbols. Morse code worked this way a century before computers: E, the most common English letter, is a single dot. Huffman coding does exactly this with bits, and it is the beating heart of ZIP and PNG.",
+            },
+            {
+              type: "callout",
+              variant: "info",
+              title: "DEEP DIVE",
+              text: "You cannot compress what has no patterns — and the most pattern-free data in the universe is properly encrypted data or pure randomness. Try to ZIP an already-encrypted file and it barely shrinks. Remember this when you reach the cryptography course: encrypted data is supposed to look like noise.",
+            },
+            {
+              type: "callout",
+              variant: "ai",
+              title: "AI ERA",
+              text: "Modern AI runs on compression's descendants. Language models learn statistical patterns so well they can guess missing text — which is compression in spirit. And the practical side still matters daily: shipping models, datasets and backups means thinking about sizes the same way engineers always have.",
+            },
+            {
+              type: "p",
+              text: "Your turn to squeeze. Implement run-length encoding exactly as shown above: each run of identical characters becomes its count followed by the character.",
+            },
+          ],
+          quiz: [
+            {
+              q: "You must email a spreadsheet of financial records. Which compression style is appropriate?",
+              options: ["Lossy, for smaller files", "Lossless, or none", "Lossy, but only slightly", "Base64"],
+              answer: 1,
+              explain:
+                "Records must come back byte-for-byte exact, so lossless (like ZIP) or no compression at all. Lossy is for human perception — images, sound, video — where approximations are acceptable.",
+            },
+            {
+              q: "Run-length encoding would work BEST on which of these?",
+              options: [
+                "A photograph of a forest",
+                "A simple black-and-white logo with large solid areas",
+                "An MP3 song file",
+                "Properly encrypted data",
+              ],
+              answer: 1,
+              explain:
+                "RLE feeds on long runs of identical values — exactly what solid-color graphics have in bulk. Photos barely repeat, songs are already compressed, and encrypted data has no patterns at all.",
+            },
+            {
+              q: "You ZIP a movie file and it shrinks by 4 percent. You ZIP an encrypted archive and it shrinks by 0.1 percent. Why?",
+              options: [
+                "ZIP refuses to touch encrypted data",
+                "Encrypted data is designed to look pattern-free, so there is nothing for a compressor to exploit",
+                "The encrypted archive was smaller to begin with",
+                "Encryption adds extra room for compression",
+              ],
+              answer: 1,
+              explain:
+                "Compression works by exploiting patterns. Good encryption destroys patterns on purpose — the output should be statistically indistinguishable from noise, and noise does not compress.",
+            },
+          ],
+          exercise: {
+            prompt: [
+              "Implement run-length encoding: replace each run of identical characters with its count and the character.",
+              "rleEncode('aaabbc') must return '3a2b1c'.",
+              "Every run gets encoded, even runs of length one: 'abc' becomes '1a1b1c'.",
+              "Empty text encodes to an empty string.",
+            ],
+            starter: `function rleEncode(text) {
+  // Walk the text, counting how many times the
+  // current character repeats. When it changes,
+  // emit count + character and start counting again.
+  // your code here
+}`,
+            tests: [
+              { name: "'aaabbc' is '3a2b1c'", code: "return rleEncode('aaabbc') === '3a2b1c';" },
+              { name: "singles are explicit", code: "return rleEncode('abc') === '1a1b1c';" },
+              { name: "one long run", code: "return rleEncode('aaaa') === '4a';" },
+              { name: "mixed runs", code: "return rleEncode('wwwgg') === '3w2g';" },
+              { name: "empty stays empty", code: "return rleEncode('') === '';" },
+            ],
+            solution: `function rleEncode(text) {
+  if (text === "") return "";
+  let result = "";
+  let current = text[0];
+  let count = 1;
+  for (let i = 1; i < text.length; i++) {
+    if (text[i] === current) {
+      count++;
+    } else {
+      result += count + current;
+      current = text[i];
+      count = 1;
+    }
+  }
+  return result + count + current; // flush the final run
+}`,
+            hints: [
+              "Track the character you are currently inside of, and how many of it you have seen.",
+              "When the character changes, append count + current to the result, then reset.",
+              "The final run never sees a 'change' — remember to append it after the loop ends.",
+            ],
+          },
+        },
+        {
+          id: "fnd-boss-data",
+          title: "The Archivist",
+          minutes: 4,
+          xp: 60,
+          concept: [
+            {
+              type: "p",
+              text: "Chapter 4 ends in the deep stacks of the data vault, where The Archivist keeps every byte that ever mattered. It speaks fluent hex, dresses its payloads in base64, and can smell a flipped bit from three cabinets away. Impress it, or be filed under 'corrupted'.",
+            },
+            {
+              type: "p",
+              text: "Boss rules as before: multiple-choice combat, every stage answered correctly to win. The Archivist has no patience for guessing.",
+            },
+          ],
+          quiz: [],
+          boss: {
+            name: "The Archivist",
+            intro:
+              "Cabinet drawers slide open around you, each one labeled in hexadecimal. The Archivist rises from behind a shelf of checksums, eyes glowing a patient amber. 'Show me you understand what data must survive,' it hums.",
+            art: `     _______________
+    | .-----------. |
+    | | > archive | |
+    | '-----------' |
+    |___[=======]___|
+     /==\\      /==\\
+    ||   |    |   ||
+     \\==/      \\==/`,
+            stages: [
+              {
+                question: "The Archivist hums: 'One of my hex digits. How many bits is it worth?'",
+                options: ["2", "4", "8", "16"],
+                answer: 1,
+                explain:
+                  "A hex digit spans 0 to 15 — exactly four bits, one nibble. Two hex digits make one byte, which is why the pairing is so convenient.",
+              },
+              {
+                question: "It slides open a drawer labeled 0xB. 'Contents?'",
+                options: ["8", "11", "13", "16"],
+                answer: 1,
+                explain:
+                  "B is hex for 11. A is 10, B is 11, C is 12, D is 13, E is 14, F is 15 — the six borrowed letters of hexadecimal.",
+              },
+              {
+                question: "It presents a file full of mixed-case letters ending in '='. 'This is encrypted, yes?'",
+                options: [
+                  "Yes — the equals sign marks encryption",
+                  "No — it is base64, an encoding anyone can reverse",
+                  "Yes — only key holders can decode it",
+                  "No — it is compressed with RLE",
+                ],
+                answer: 1,
+                explain:
+                  "That is the base64 signature: no key, no secrecy, one function call to reverse. It is a text costume for bytes, not a vault.",
+              },
+              {
+                question: "A drawer rattles. 'My checksum disagrees with the bytes inside. What can my checksum tell me?'",
+                options: [
+                  "Exactly which bit flipped, and how to fix it",
+                  "That something changed — but not what, and it cannot repair it",
+                  "That the drawer is under attack right now",
+                  "Nothing — checksums are decorative",
+                ],
+                answer: 1,
+                explain:
+                  "Checksums and parity are detection tools: they raise a hand when numbers disagree. Locating and repairing the damage needs heavier machinery.",
+              },
+              {
+                question: "Final riddle: 'Decode my run: 4a2b.'",
+                options: ["aaab", "aaaabb", "aabb", "4ab2"],
+                answer: 1,
+                explain:
+                  "Run-length encoding reads count-then-symbol: 4 a's, then 2 b's — aaaabb. Runs become counts, counts become runs.",
+              },
+            ],
+          },
+        },
+      ],
+    },
   ],
 };
