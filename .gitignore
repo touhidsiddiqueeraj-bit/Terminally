@@ -63,4 +63,4 @@ download/
 Caddyfile
 .z-ai-config
 .claude
-agent-ctx/
+agent-ctx/mini-services/
