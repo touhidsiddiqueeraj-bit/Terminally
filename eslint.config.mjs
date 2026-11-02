@@ -44,7 +44,9 @@ const eslintConfig = [...nextCoreWebVitals, ...nextTypescript, {
     "no-useless-escape": "off",
   },
 }, {
-  ignores: ["node_modules/**", ".next/**", "out/**", "build/**", "next-env.d.ts", "examples/**", "skills", "**/*.cjs"]
+  ignores: ["node_modules/**", ".next/**", "out/**", "build/**", "next-env.d.ts", "examples/**", "skills", "**/*.cjs",
+    // GitHub Pages artifacts committed to the repo root (legacy Pages mode)
+    "_next/**", "sw.js", "404.html", "index.html"]
 }];
 
 export default eslintConfig;

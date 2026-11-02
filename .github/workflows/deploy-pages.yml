@@ -4,9 +4,18 @@ name: Deploy to GitHub Pages
 # (project pages live at https://<user>.github.io/<repo>/) and deploys it
 # to GitHub Pages. One-time setup: repo Settings → Pages → Source: GitHub Actions.
 
+# Manual builder for GitHub Pages.
+#
+# NOTE: while the repo's Pages Source is "Deploy from a branch" (legacy —
+# serving the repo root), this workflow's artifact deploy cannot win: every
+# push triggers a legacy Jekyll build that overwrites it, and the REST API
+# rejects build_type changes from both fine-grained PATs and GITHUB_TOKEN
+# (verified: HTTP 403 "not accessible"). Until the Source is switched to
+# "GitHub Actions" in repo settings, the live site is updated by committing
+# the static build to the repo root (see README). Flip the Source, then run
+# this workflow and remove the root artifacts.
+
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 permissions:
