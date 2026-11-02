@@ -88,13 +88,17 @@ APKs for sideloading; releases attach them automatically on `v*` tags.
 > installed app when it's signed with the same key — otherwise users must
 > uninstall first.
 
-### CI
+### CI & releases
 
 `.github/workflows/ci.yml` builds a debug APK on every push/PR (artifact
-`terminal-academy-debug-apk`); `.github/workflows/release.yml` attaches
-`TerminalAcademy-<tag>.apk` to GitHub Releases. To make CI ship
-release-signed builds, store the keystore + properties as repo secrets and
-swap `assembleDebug` for `assembleRelease`.
+`terminal-academy-debug-apk`). `.github/workflows/release.yml` is a manual
+builder: run it from the Actions tab with a tag name (e.g. `v1.0.0`) and it
+attaches a debug APK + site/project zips to that release.
+
+The **signed** APK that end users install is built and uploaded by hand —
+the release keystore never leaves the maintainer's machine. To automate
+release signing instead, store the keystore + `keystore.properties` as repo
+secrets and swap `assembleDebug` for `assembleRelease`.
 
 ## Updating the content
 

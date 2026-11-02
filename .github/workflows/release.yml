@@ -1,13 +1,20 @@
 name: Release
 
-# Publishing a tag (v1.0.0, …) builds the static site and the ready-to-open
-# Android project, and attaches both to a GitHub Release.
+# Manual release builder. Releases are published by hand with the
+# release-signed APK (the keystore never leaves the maintainer's machine),
+# so this workflow exists to automate everything AROUND the signing:
 #
-#   git tag v1.0.0 && git push origin v1.0.0
+#   Run it from the Actions tab → "Release" → "Run workflow" with a tag
+#   name (e.g. v1.0.0). It builds the static site, a debug-signed APK and
+#   the ready-to-open Android project, then attaches them to that release.
 
 on:
-  push:
-    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release tag to publish to, e.g. v1.0.0'
+        required: true
+        default: 'v1.0.0'
 
 permissions:
   contents: write
@@ -44,7 +51,7 @@ jobs:
         run: bun run build:static
 
       - name: Package site zip
-        run: cd out && zip -qr "../terminally-site-${{ github.ref_name }}.zip" . && cd ..
+        run: cd out && zip -qr "../terminally-site-${{ inputs.version }}.zip" . && cd ..
 
       - name: Sync assets into Android project
         run: ./android/sync-assets.sh
@@ -58,19 +65,22 @@ jobs:
       - name: Rename APK
         run: |
           mv android/app/build/outputs/apk/debug/app-debug.apk \
-             "TerminalAcademy-${{ github.ref_name }}.apk"
+             "TerminalAcademy-${{ inputs.version }}.apk"
 
       - name: Package Android project zip
         run: >
-          zip -qr "terminally-android-project-${{ github.ref_name }}.zip" android
+          zip -qr "terminally-android-project-${{ inputs.version }}.zip" android
           -x "android/.gradle/*" "android/app/build/*" "android/local.properties"
           "android/keystore.properties" "android/keystores/*"
 
+      # Creates the tag if it does not exist yet; uploads the debug APK and
+      # zips as release assets (the release-signed APK is uploaded by hand).
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ inputs.version }}
           generate_release_notes: true
           files: |
-            TerminalAcademy-${{ github.ref_name }}.apk
-            terminally-site-${{ github.ref_name }}.zip
-            terminally-android-project-${{ github.ref_name }}.zip
+            TerminalAcademy-${{ inputs.version }}.apk
+            terminally-site-${{ inputs.version }}.zip
+            terminally-android-project-${{ inputs.version }}.zip
