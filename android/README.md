@@ -25,7 +25,9 @@ needs no internet**, ever.
 - `MainActivity` hosts a single `WebView`.
 - Instead of loading files or a remote URL, it uses
   **`WebViewAssetLoader`** (androidx.webkit) to serve the bundled assets on
-  `https://appassets.androidxfs.net/`.
+  `https://appassets.androidplatform.net/` (the domain WebViewAssetLoader
+  actually serves — v1.0.0 loaded a different host and got ERR_CACHE_MISS;
+  `AssetServingTest` now fails the build if the two ever diverge again).
 - That fake https origin gives the page a **secure context**, so:
   - `localStorage` works → the learner's XP, streaks and badges persist,
   - the service worker can register (belt-and-suspenders; everything is local

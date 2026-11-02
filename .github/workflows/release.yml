@@ -69,6 +69,9 @@ jobs:
       - name: Sync assets into Android project
         run: ./android/sync-assets.sh
 
+      - name: Run Android unit tests
+        run: cd android && ./gradlew testReleaseUnitTest --no-daemon
+
       # Debug-signed with the runner's debug key → sideload-ready APK.
       # To ship release-signed builds, add keystore.properties + keystore as
       # repo secrets and switch to `assembleRelease` (see android/README.md).

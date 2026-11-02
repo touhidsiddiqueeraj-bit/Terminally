@@ -83,6 +83,11 @@ jobs:
       - name: Sync site into Android assets
         run: ./android/sync-assets.sh
 
+      # Includes AssetServingTest — the regression suite for the v1.0.0
+      # ERR_CACHE_MISS launch bug (loader domain vs start URL mismatch).
+      - name: Run Android unit tests
+        run: cd android && ./gradlew testReleaseUnitTest --no-daemon
+
       # Debug-signed with the runner's debug key → directly installable.
       # For a release-signed APK see android/README.md (keystore.properties).
       - name: Build APK

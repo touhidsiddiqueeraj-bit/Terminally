@@ -36,8 +36,8 @@ android {
         applicationId = "com.terminalacademy.app"
         minSdk = 24
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = 2
+        versionName = "1.0.1"
     }
 
     signingConfigs {
@@ -73,6 +73,15 @@ android {
         jvmTarget = "17"
     }
 
+    testOptions {
+        unitTests {
+            // Let Robolectric tests read the real merged assets (index.html,
+            // _next/ chunks…) — the regression tests assert what the WebView
+            // would actually be served.
+            isIncludeAndroidResources = true
+        }
+    }
+
     androidResources {
         // Next.js emits all JS/CSS under `assets/_next/`, but aapt's DEFAULT
         // ignore pattern contains `<dir>_*`, which silently drops every
@@ -87,4 +96,7 @@ dependencies {
     implementation("androidx.core:core-ktx:1.13.1")
     implementation("androidx.appcompat:appcompat:1.7.0")
     implementation("androidx.webkit:webkit:1.11.0")
+
+    testImplementation("junit:junit:4.13.2")
+    testImplementation("org.robolectric:robolectric:4.13")
 }
