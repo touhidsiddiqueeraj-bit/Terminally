@@ -1,6 +1,31 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+}
+
+// ── Release signing ─────────────────────────────────────────────────────────
+// Reads android/keystore.properties (gitignored). Generate a key once:
+//
+//   keytool -genkeypair -v \
+//     -keystore android/keystores/terminal-academy-release.keystore \
+//     -alias terminalacademy -keyalg RSA -keysize 2048 -validity 10000
+//
+// keystore.properties:
+//   storeFile=keystores/terminal-academy-release.keystore
+//   storePassword=…
+//   keyAlias=terminalacademy
+//   keyPassword=…
+//
+// Without keystore.properties, `gradle assembleRelease` still builds and
+// produces an unsigned APK (app-release-unsigned.apk) that you can sign later.
+val keystoreProperties = Properties()
+val keystorePropertiesFile = rootProject.file("keystore.properties")
+val hasReleaseSigning = keystorePropertiesFile.exists()
+if (hasReleaseSigning) {
+    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
 }
 
 android {
@@ -15,6 +40,17 @@ android {
         versionName = "1.0"
     }
 
+    signingConfigs {
+        if (hasReleaseSigning) {
+            create("release") {
+                storeFile = rootProject.file(keystoreProperties.getProperty("storeFile"))
+                storePassword = keystoreProperties.getProperty("storePassword")
+                keyAlias = keystoreProperties.getProperty("keyAlias")
+                keyPassword = keystoreProperties.getProperty("keyPassword")
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -22,6 +58,9 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            if (hasReleaseSigning) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
     }
 
@@ -32,6 +71,15 @@ android {
 
     kotlinOptions {
         jvmTarget = "17"
+    }
+
+    androidResources {
+        // Next.js emits all JS/CSS under `assets/_next/`, but aapt's DEFAULT
+        // ignore pattern contains `<dir>_*`, which silently drops every
+        // underscore-prefixed DIRECTORY while packaging — the app would ship
+        // with a blank page. Keep the rest of the defaults, drop that rule.
+        ignoreAssetsPattern =
+            "!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~"
     }
 }
 

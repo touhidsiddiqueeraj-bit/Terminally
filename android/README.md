@@ -46,17 +46,55 @@ Prerequisites on your machine:
 bun run build:static          # produces out/ (uses STATIC_EXPORT=1)
 
 # 2. Copy the export into the Android assets
-./android/sync-assets.sh
+./android/sync-assets.sh      # also strips *.map source maps
 
 # 3. Build the APK
 #    - Open the android/ folder in Android Studio → Run ▶ (debug APK), or
-#    - Command line:
+#    - Command line (the Gradle wrapper is committed, no local Gradle needed):
 cd android && ./gradlew assembleDebug
-#    → app/build/outputs/apk/debug/app-debug.apk
+#    → app/build/outputs/apk/debug/app-debug.apk   (debug-signed, installable)
 ```
 
-For a Play-Store-ready build: `./gradlew assembleRelease` with your signing
-config (or use Android Studio's **Generate Signed Bundle / APK** wizard).
+JDK 17+ and Android SDK 34 are required (Android Studio bundles both);
+`local.properties` pointing at the SDK is created automatically by Android
+Studio, or by hand: `sdk.dir=/path/to/android-sdk`.
+
+### Release signing
+
+`assembleRelease` reads `android/keystore.properties` (gitignored) when it
+exists and signs the APK with your key. Create it once:
+
+```bash
+keytool -genkeypair -v \
+  -keystore android/keystores/terminal-academy-release.keystore \
+  -alias terminalacademy -keyalg RSA -keysize 2048 -validity 10000
+
+cat > android/keystore.properties <<'EOF'
+storeFile=keystores/terminal-academy-release.keystore
+storePassword=YOUR_STORE_PASSWORD
+keyAlias=terminalacademy
+keyPassword=YOUR_KEY_PASSWORD
+EOF
+
+cd android && ./gradlew assembleRelease
+# → app/build/outputs/apk/release/app-release.apk (signed, zipaligned)
+```
+
+Without `keystore.properties` the release build still works and produces an
+**unsigned** APK you can sign later with `apksigner`. CI builds debug-signed
+APKs for sideloading; releases attach them automatically on `v*` tags.
+
+> **Keep the keystore.** Android only treats a new APK as an *update* of the
+> installed app when it's signed with the same key — otherwise users must
+> uninstall first.
+
+### CI
+
+`.github/workflows/ci.yml` builds a debug APK on every push/PR (artifact
+`terminal-academy-debug-apk`); `.github/workflows/release.yml` attaches
+`TerminalAcademy-<tag>.apk` to GitHub Releases. To make CI ship
+release-signed builds, store the keystore + properties as repo secrets and
+swap `assembleDebug` for `assembleRelease`.
 
 ## Updating the content
 
@@ -76,8 +114,18 @@ steps 1-2 above and rebuild. The Android shell almost never changes.
 
 ## Troubleshooting
 
-- **White screen on launch** → assets are missing; run `sync-assets.sh`.
+- **White screen on launch, but assets ARE in the APK** → check the aapt
+  ignore pattern: Next.js keeps all JS/CSS under `assets/_next/`, and aapt's
+  *default* pattern contains `<dir>_*`, which silently drops underscore-
+  prefixed directories. `app/build.gradle.kts` overrides
+  `androidResources.ignoreAssetsPattern` for exactly this reason — don't
+  remove it. Verify with:
+  `unzip -l app-release.apk | grep assets/_next/`
+- **White screen on launch, assets missing** → run `sync-assets.sh` (needs
+  `bun run build:static` first).
 - **"Page not found" style error** → make sure `out/index.html` exists and was
   copied to `app/src/main/assets/index.html`.
 - **Progress lost on app update** → it shouldn't be (same origin, same
   WebView); users can also export/import a save file from Profile → Your Data.
+- **Gradle out of memory in small CI runners** → `gradle.properties` pins a
+  ~1.5 GB heap; raise `org.gradle.jvmargs` on machines with RAM to spare.

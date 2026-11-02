@@ -21,6 +21,9 @@ find "$DEST" -mindepth 1 ! -name 'README.txt' -exec rm -rf {} +
 
 cp -r ../out/* "$DEST/"
 
+# Source maps are dev-only weight inside the APK — drop them.
+find "$DEST" -type f -name '*.map' -delete
+
 SIZE=$(du -sh "$DEST" | cut -f1)
 echo "✓ synced $SIZE of static site into $DEST"
 echo "  → open this folder in Android Studio and build the APK"

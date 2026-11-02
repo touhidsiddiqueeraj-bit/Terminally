@@ -23,6 +23,15 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
 
+      - name: Setup JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
@@ -40,13 +49,28 @@ jobs:
       - name: Sync assets into Android project
         run: ./android/sync-assets.sh
 
+      # Debug-signed with the runner's debug key → sideload-ready APK.
+      # To ship release-signed builds, add keystore.properties + keystore as
+      # repo secrets and switch to `assembleRelease` (see android/README.md).
+      - name: Build Android APK
+        run: cd android && ./gradlew assembleDebug --no-daemon
+
+      - name: Rename APK
+        run: |
+          mv android/app/build/outputs/apk/debug/app-debug.apk \
+             "TerminalAcademy-${{ github.ref_name }}.apk"
+
       - name: Package Android project zip
-        run: zip -qr "terminally-android-project-${{ github.ref_name }}.zip" android -x "android/.gradle/*"
+        run: >
+          zip -qr "terminally-android-project-${{ github.ref_name }}.zip" android
+          -x "android/.gradle/*" "android/app/build/*" "android/local.properties"
+          "android/keystore.properties" "android/keystores/*"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           generate_release_notes: true
           files: |
+            TerminalAcademy-${{ github.ref_name }}.apk
             terminally-site-${{ github.ref_name }}.zip
             terminally-android-project-${{ github.ref_name }}.zip
