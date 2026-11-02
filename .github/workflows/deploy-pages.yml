@@ -26,6 +26,24 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # The repo must be in Settings → Pages → Source: "GitHub Actions"
+      # (build_type: workflow). We can't create or update the site through a
+      # PAT lacking Pages write, so switch it here with this workflow's
+      # GITHUB_TOKEN (which HAS pages: write). Idempotent: 204 = switched,
+      # 422/409 = already in workflow mode, anything else is logged but
+      # non-fatal (configure-pages below reports the real state).
+      - name: Switch Pages to "GitHub Actions" deployment mode
+        run: |
+          CODE=$(curl -s -o /tmp/pages-resp.json -w "%{http_code}" -X PUT \
+            -H "Authorization: Bearer ${{ github.token }}" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/${{ github.repository }}/pages \
+            -d '{"build_type":"workflow"}') || CODE=curl-failed
+          echo "PUT /pages → HTTP $CODE"
+          cat /tmp/pages-resp.json 2>/dev/null || true
+          test "$CODE" = "204" || test "$CODE" = "422" || test "$CODE" = "409" \
+            || echo "::warning::could not switch Pages mode (HTTP $CODE) — deploy may fail until Source is set to GitHub Actions in repo settings"
+
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
 
