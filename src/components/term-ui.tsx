@@ -1,6 +1,6 @@
 "use client";
 
-import { Cpu, KeyRound, Shield, Sparkles, Flame, Zap, Target, Brain, Code2, Terminal, Swords, Crown, GraduationCap, TrendingUp, Trophy, Lock, Check, BookOpen, ChevronRight, Heart, Star } from "lucide-react";
+import { Cpu, KeyRound, Shield, Sparkles, Flame, Zap, Target, Brain, Code2, Terminal, Swords, Crown, GraduationCap, TrendingUp, Trophy, Lock, Check, BookOpen, ChevronRight, Heart, Star, Blocks, Rocket, GitBranch, Workflow } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { CourseId } from "@/data/types";
@@ -14,6 +14,8 @@ export type CourseColor = {
   glow: string;
   ring: string;
   hex: string;
+  /** solid tailwind class for progress bar fills */
+  bar: string;
 };
 
 export const COURSE_COLORS: Record<CourseId, CourseColor> = {
@@ -24,6 +26,7 @@ export const COURSE_COLORS: Record<CourseId, CourseColor> = {
     glow: "glow-green",
     ring: "focus-visible:ring-emerald-500",
     hex: "#34d399",
+    bar: "bg-emerald-500",
   },
   crypto: {
     text: "text-violet-400",
@@ -32,6 +35,7 @@ export const COURSE_COLORS: Record<CourseId, CourseColor> = {
     glow: "glow-purple",
     ring: "focus-visible:ring-violet-500",
     hex: "#a78bfa",
+    bar: "bg-violet-500",
   },
   security: {
     text: "text-amber-400",
@@ -40,6 +44,25 @@ export const COURSE_COLORS: Record<CourseId, CourseColor> = {
     glow: "glow-amber",
     ring: "focus-visible:ring-amber-500",
     hex: "#fbbf24",
+    bar: "bg-amber-500",
+  },
+  architecture: {
+    text: "text-red-400",
+    bgSoft: "bg-red-500/10",
+    border: "border-red-500/40",
+    glow: "glow-red",
+    ring: "focus-visible:ring-red-500",
+    hex: "#f87171",
+    bar: "bg-red-500",
+  },
+  development: {
+    text: "text-pink-400",
+    bgSoft: "bg-pink-500/10",
+    border: "border-pink-500/40",
+    glow: "glow-pink",
+    ring: "focus-visible:ring-pink-500",
+    hex: "#f472b6",
+    bar: "bg-pink-500",
   },
 };
 
@@ -71,6 +94,10 @@ export const ICONS: Record<string, LucideIcon> = {
   chevron: ChevronRight,
   heart: Heart,
   star: Star,
+  blocks: Blocks,
+  rocket: Rocket,
+  git: GitBranch,
+  workflow: Workflow,
 };
 
 export function Icon({ name, className }: { name: string; className?: string }) {

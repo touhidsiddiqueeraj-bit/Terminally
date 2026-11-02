@@ -14,6 +14,10 @@ export const LEVEL_TITLES = [
   "Crypto Sage",
   "Security Sentinel",
   "Terminal Legend",
+  "Systems Thinker",
+  "Pipeline Pilot",
+  "Machine Whisperer",
+  "Post-AI Pioneer",
 ] as const;
 
 /** Cumulative XP required to REACH a level (level 1 starts at 0). */
@@ -80,6 +84,8 @@ export type BadgeDef = {
     | "cpu"
     | "key"
     | "shield"
+    | "blocks"
+    | "rocket"
     | "graduation"
     | "trending"
     | "trophy";
@@ -98,6 +104,8 @@ export const BADGES: BadgeDef[] = [
   { id: "foundations-complete", title: "Grounded", desc: "Finish Digital Foundations", icon: "cpu" },
   { id: "crypto-complete", title: "Keybearer", desc: "Finish Cryptography", icon: "key" },
   { id: "security-complete", title: "Sentinel", desc: "Finish Security & Privacy", icon: "shield" },
+  { id: "architecture-complete", title: "Blueprint Bearer", desc: "Finish Software Architecture", icon: "blocks" },
+  { id: "development-complete", title: "Shipwright", desc: "Finish Modern Development", icon: "rocket" },
   { id: "level-5", title: "Rising Star", desc: "Reach level 5", icon: "trending" },
   { id: "level-10", title: "Peak Performer", desc: "Reach level 10", icon: "trophy" },
   { id: "scholar", title: "Terminal Legend", desc: "Complete every course", icon: "graduation" },

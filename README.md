@@ -34,20 +34,25 @@ Your profile tracks badges, streak freezes, XP history and a portable JSON save 
 
 ---
 
-## The curriculum — 3 courses · 69 nodes
+## The curriculum — 5 courses · 100 nodes
 
 Learners don't just *watch* cryptography: they **build** Caesar, Vigenère, XOR, hashes and
 salting with their own hands before the course escalates to AES, RSA, Diffie-Hellman, TLS,
-end-to-end encryption, zero-knowledge proofs and post-quantum schemes.
+end-to-end encryption, zero-knowledge proofs and post-quantum schemes. Then the red and
+pink paths take them through software architecture and the full engineering craft — git,
+review, testing, debugging, CI/CD, observability — plus the skills of the post-AI
+developer: pairing with machines, verifying their output, and owning what ships.
 
 | # | Course | Chapters | What you build & learn |
 |---|--------|----------|------------------------|
 | 01 | 🟢 **Digital Foundations** *(20 nodes)* | Bits & Bytes · Logic & Code · The Internet · **Data, Errors & Compression** | Binary → bytes → text encodings, boolean logic, branching, loops, packets/DNS/HTTP, plus hex, base64, checksums and run-length compression — each with a coding exercise |
 | 02 | 🟣 **Cryptography** *(28 nodes)* | Classic Ciphers · Modern Building Blocks · **Randomness & Cryptanalysis** · Public-Key Revolution · Crypto in the AI Age | Caesar, Vigenère, XOR, one-time pads, hashing & salting (implemented by *you*), symmetric vs. public-key, RSA intuition, Diffie-Hellman, signatures, HTTPS, E2EE, ZK proofs, post-quantum — and why PRNGs, nonces and frequency analysis decide who wins |
 | 03 | 🟡 **Security & Privacy** *(21 nodes)* | Your Digital Fortress · Attacks & Defenses · **Everyday Network Defense** · Privacy in the AI Era | Threat modeling, password entropy (computed in JS), managers & passkeys, 2FA, phishing & AI scams, malware, zero trust, evil-twin Wi-Fi, VPN reality-checks, router hardening, patch strategy, deepfake defense — capped by the **Phishing Gauntlet** boss |
+| 04 | 🔴 **Software Architecture** *(15 nodes)* | Thinking in Systems · Patterns & Principles · **Data & Scale** | Clients, servers & API contracts, abstraction & boundaries, coupling vs. cohesion, SOLID, design patterns (you build an event emitter), DRY/KISS/YAGNI, tech debt & refactoring, data modeling (you build an index), SQL vs. NoSQL, caching (you build memoization), monolith vs. microservices, message queues — capped by the **Scale Titan** |
+| 05 | 🩷 **Modern Development** *(16 nodes)* | The Developer's Workshop · **Ship It: CI/CD** · The Post-AI Developer | Git & the time machine (you replay history), code review, the test pyramid (you compute a pass rate), debugging & git bisect (you implement binary search), CI pipelines (you write the deploy gate), build-once-deploy-many, canary/blue-green deploys, observability & SLOs, pairing with AI, verifying AI output, ethics & the human signature, judgment & saying no — capped by **The Hallucination**, the academy's final boss |
 
-**Content totals:** 56 lessons · 13 boss battles · 162 quiz questions · 77 boss stages ·
-21 auto-graded exercises · **2,240 XP** of earnable content · 15 badges · 10 level ranks.
+**Content totals:** 81 lessons · 19 boss battles · 237 quiz questions · 109 boss stages ·
+34 auto-graded exercises · **3,420 XP** of earnable content · 17 badges · 14 level ranks.
 
 > Chapters in **bold** shipped in the latest content expansion. Every exercise ships with a
 > verified reference solution and tests that the starter code deliberately fails — no freebies.
@@ -59,7 +64,9 @@ end-to-end encryption, zero-knowledge proofs and post-quantum schemes.
 - **boot.dev-style loop** — concept → quiz → hands-on code, in 3–6 minute nodes. Linear paths
   with boss gates beat endless video catalogs for beginners.
 - **Post-AI curriculum** — the skills that stay valuable when AI writes your boilerplate:
-  how machines represent data, how secrets actually work, and how attackers think.
+  how machines represent data, how secrets actually work, how attackers think, how systems
+  are architected — and the engineering craft (git, tests, CI/CD, review, judgment) that
+  separates engineers from prompt writers.
 - **Offline-first** — a service worker caches the whole app; progress lives in `localStorage`.
   Load it once, then learn on a plane. The same build ships inside an Android WebView shell.
 - **Zero backend** — everything (including the sandboxed code runner) is static, which makes

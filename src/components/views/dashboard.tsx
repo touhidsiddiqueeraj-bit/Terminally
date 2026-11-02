@@ -183,7 +183,7 @@ export function DashboardView({ go }: { go: (v: View) => void }) {
                 </h3>
                 <p className="mt-1 flex-1 text-sm leading-6 text-foreground/75">{course.subtitle}</p>
                 <div className="mt-4">
-                  <XPBar pct={stats.pct} colorClass={course.id === "foundations" ? "bg-emerald-500" : course.id === "crypto" ? "bg-violet-500" : "bg-amber-500"} />
+                  <XPBar pct={stats.pct} colorClass={c.bar} />
                   <div className="mt-1.5 flex items-center justify-between font-mono text-[11px] text-muted-foreground">
                     <span>{stats.pct}% complete</span>
                     <span className={cn("font-bold uppercase tracking-wider transition-colors", c.text)}>

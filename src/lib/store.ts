@@ -8,6 +8,8 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { ALL_LESSONS, getLessonRef, lessonsOf, courseStats } from "@/lib/content";
+import { COURSES } from "@/data/courses";
+import type { CourseId } from "@/data/types";
 import { levelFromXp, todayStr, addDays, daysBetween } from "@/lib/gamify";
 
 export type LessonRecord = {
@@ -73,7 +75,9 @@ const BADGE_RULES: Array<{
   },
   {
     id: "code-ninja",
-    test: (s) => Object.values(s.lessons).filter((r) => r.exerciseDone).length >= 14,
+    test: (s) =>
+      Object.values(s.lessons).filter((r) => r.exerciseDone).length >=
+      ALL_LESSONS.filter((r) => r.lesson.exercise).length,
   },
   {
     id: "boss-slayer",
@@ -89,18 +93,19 @@ const BADGE_RULES: Array<{
   { id: "foundations-complete", test: (s) => courseComplete(s, "foundations") },
   { id: "crypto-complete", test: (s) => courseComplete(s, "crypto") },
   { id: "security-complete", test: (s) => courseComplete(s, "security") },
+  { id: "architecture-complete", test: (s) => courseComplete(s, "architecture") },
+  { id: "development-complete", test: (s) => courseComplete(s, "development") },
   { id: "level-5", test: (s) => levelFromXp(s.xp) >= 5 },
   { id: "level-10", test: (s) => levelFromXp(s.xp) >= 10 },
   {
     id: "scholar",
-    test: (s) =>
-      courseComplete(s, "foundations") && courseComplete(s, "crypto") && courseComplete(s, "security"),
+    test: (s) => COURSES.every((c) => courseComplete(s, c.id)),
   },
 ];
 
 function courseComplete(
   s: { lessons: Record<string, LessonRecord> },
-  courseId: "foundations" | "crypto" | "security",
+  courseId: CourseId,
 ): boolean {
   const siblings = lessonsOf(courseId);
   return siblings.every((r) => s.lessons[r.id]);

@@ -44,12 +44,7 @@ export function CourseView({ courseId, go }: { courseId: CourseId; go: (v: View)
             </div>
           </div>
           <div className="mt-5">
-            <XPBar
-              pct={stats.pct}
-              colorClass={
-                courseId === "foundations" ? "bg-emerald-500" : courseId === "crypto" ? "bg-violet-500" : "bg-amber-500"
-              }
-            />
+            <XPBar pct={stats.pct} colorClass={c.bar} />
             <div className="mt-1.5 flex items-center justify-between font-mono text-[11px] text-muted-foreground">
               <span>
                 {stats.done}/{stats.total} nodes — {stats.xpEarned}/{stats.xpTotal} xp

@@ -113,6 +113,9 @@
 .glow-red {
   text-shadow: 0 0 10px rgba(255, 84, 104, 0.6), 0 0 32px rgba(255, 84, 104, 0.25);
 }
+.glow-pink {
+  text-shadow: 0 0 10px rgba(244, 114, 182, 0.55), 0 0 32px rgba(244, 114, 182, 0.22);
+}
 
 /* CRT scanline overlay — fixed, pointer-transparent */
 .scanlines::after {

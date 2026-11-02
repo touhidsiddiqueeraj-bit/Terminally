@@ -76,13 +76,13 @@ export type Chapter = {
   lessons: Lesson[];
 };
 
-export type CourseId = "foundations" | "crypto" | "security";
+export type CourseId = "foundations" | "crypto" | "security" | "architecture" | "development";
 
 export type Course = {
   id: CourseId;
   title: string;
   subtitle: string;
-  icon: "cpu" | "key" | "shield";
-  color: "green" | "purple" | "amber";
+  icon: "cpu" | "key" | "shield" | "blocks" | "rocket";
+  color: "green" | "purple" | "amber" | "red" | "pink";
   chapters: Chapter[];
 };
