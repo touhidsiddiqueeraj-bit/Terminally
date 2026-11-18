@@ -1,14 +1,75 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Lesson } from "@/data/types";
+import type { AudioClip } from "@/data/audio-notes";
+import { BOSS_VOICES } from "@/data/audio-notes";
 import { cn } from "@/lib/utils";
-import { Swords, Heart, Skull, Trophy, RotateCcw, ChevronRight } from "lucide-react";
+import { Swords, Heart, Skull, Trophy, RotateCcw, ChevronRight, Volume2, Pause } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { sfx } from "@/lib/sound";
 import { Confetti } from "@/components/fx";
 
 type Phase = "intro" | "fighting" | "victory" | "defeat";
+
+/** "Hear the boss" — plays the pre-generated studio voice line of the
+ *  boss's intro speech. Unmounting (when the fight begins) stops playback. */
+function BossVoiceLine({ lessonId }: { lessonId: string }) {
+  const clip: AudioClip | undefined = BOSS_VOICES[lessonId];
+  const [playing, setPlaying] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    if (!clip) return;
+    const a = new Audio(clip.file);
+    audioRef.current = a;
+    a.preload = "metadata";
+    // prime the service-worker cache for offline boss voice playback
+    if (navigator.onLine) void fetch(clip.file).catch(() => {});
+    const onEnd = () => setPlaying(false);
+    const onErr = () => setPlaying(false);
+    a.addEventListener("ended", onEnd);
+    a.addEventListener("error", onErr);
+    return () => {
+      a.pause();
+      a.removeEventListener("ended", onEnd);
+      a.removeEventListener("error", onErr);
+      audioRef.current = null;
+    };
+  }, [clip]);
+
+  if (!clip) return null;
+
+  function toggle() {
+    const a = audioRef.current;
+    if (!a) return;
+    sfx.click();
+    if (playing) {
+      a.pause();
+      setPlaying(false);
+    } else {
+      void a.play().then(
+        () => setPlaying(true),
+        () => setPlaying(false),
+      );
+    }
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={toggle}
+      className={cn(
+        "mt-3 flex items-center gap-1.5 rounded-md border border-red-500/40 bg-red-500/10 px-3 py-1.5 font-mono text-[11px] uppercase tracking-wider text-red-300 term-focus hover:bg-red-500/20",
+        playing && "animate-pulse-glow",
+      )}
+      aria-label={playing ? "stop boss voice" : "play boss voice"}
+    >
+      {playing ? <Pause className="h-3.5 w-3.5" aria-hidden /> : <Volume2 className="h-3.5 w-3.5" aria-hidden />}
+      {playing ? "silence the boss" : "hear the boss"}
+    </button>
+  );
+}
 
 const PLAYER_HP = 3;
 
@@ -150,6 +211,7 @@ export function BossBattle({
             className="rounded-lg border border-border bg-card p-5 sm:p-6"
           >
             <p className="text-[15px] leading-7 text-foreground/90">{boss.intro}</p>
+            <BossVoiceLine lessonId={lesson.id} />
             <p className="mt-3 font-mono text-xs text-muted-foreground">
               rules of engagement: {totalStages} questions — each correct answer breaks one shield.
               wrong answers cost you a heart. three hearts, no retries mid-fight, defeat just means

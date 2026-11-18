@@ -139,14 +139,13 @@ export function LessonView({ lessonId, go }: { lessonId: string; go: (v: View) =
               if (r) setResult(r);
             }}
           />
-          <AudioNotes title={ref.lesson.title} blocks={ref.lesson.concept} />
           <LessonBlocks blocks={ref.lesson.concept} />
         </>
       ) : (
         <>
           {/* concept */}
           <section aria-label="lesson content">
-            <AudioNotes title={ref.lesson.title} blocks={ref.lesson.concept} />
+            <AudioNotes lessonId={lessonId} title={ref.lesson.title} blocks={ref.lesson.concept} />
             <LessonBlocks blocks={ref.lesson.concept} />
           </section>
 

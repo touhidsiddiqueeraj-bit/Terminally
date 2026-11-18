@@ -23,9 +23,9 @@ defend your knowledge in a boss battle. Everything runs client-side: no accounts
 | ![Dashboard](docs/screenshots/dashboard.png) | ![Course map](docs/screenshots/course-map.png) |
 | **Micro-lessons & knowledge checks** — concepts, real code and instant quizzes; perfect runs pay bonus XP. | **In-browser coding** — a sandboxed JS editor with auto-graded tests and hints. |
 | ![Lesson](docs/screenshots/lesson.png) | ![Exercise](docs/screenshots/exercise.png) |
-| **Boss battles** — multi-stage combat where wrong answers cost your shield. | **Training grounds** — a free playground that works offline. |
+| **Boss battles** — multi-stage combat where wrong answers cost your shield — and the bosses taunt you out loud with pre-generated voice lines. | **Training grounds** — a free playground that works offline. |
 | ![Boss battle](docs/screenshots/boss-battle.png) | ![Playground](docs/screenshots/playground.png) |
-| **The arcade** — bit_blitz, command_rush, phishing_spotter and type_rush drill the same skills for fun, with local high scores. | **Interactive demos & audio notes** — flip real bits, turn a Caesar dial, watch a hash avalanche, fire packets — and listen to any lesson aloud. |
+| **The arcade** — bit_blitz, command_rush, phishing_spotter and type_rush drill the same skills for fun, with local high scores. | **Interactive demos & audio notes** — flip real bits, turn a Caesar dial, watch a hash avalanche, fire packets — and listen to a studio-recorded voice note for every lesson (100 pre-generated clips, cached for offline). |
 | **Fully responsive** — bottom navigation and touch-first layout on mobile. | |
 | ![Mobile](docs/screenshots/mobile.png) | |
 
@@ -168,7 +168,8 @@ every release tag.
 
 Next.js 16 (App Router, static export) · React 19 · TypeScript (strict) · Tailwind CSS 4 ·
 shadcn/ui · zustand + localStorage (offline progress) · framer-motion · Web Audio API
-(sound engine) · speechSynthesis (audio notes) · sandboxed iframe code runner ·
+(sound engine) · pre-generated studio voice notes (100 MP3 clips under `public/audio`,
+device speechSynthesis fallback) · sandboxed iframe code runner ·
 PWA service worker · Kotlin/WebView Android shell.
 
 ---

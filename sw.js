@@ -9,7 +9,7 @@
  * (e.g. GitHub Pages project sites).
  */
 
-const CACHE_NAME = "terminal-academy-v2";
+const CACHE_NAME = "terminal-academy-v3";
 // Scope always ends with "/" — e.g. "/" or "/Terminally/".
 const BASE = new URL(self.registration.scope).pathname;
 const CORE_ASSETS = [
@@ -82,7 +82,9 @@ self.addEventListener("fetch", (event) => {
           (async () => {
             try {
               const fresh = await fetch(request);
-              if (fresh && fresh.ok) cache.put(request, fresh.clone());
+              // only full responses: caching a 206 Range partial
+              // (audio streaming) would corrupt offline playback
+              if (fresh && fresh.status === 200) cache.put(request, fresh.clone());
             } catch {
               /* offline — cached copy stands */
             }
@@ -92,7 +94,9 @@ self.addEventListener("fetch", (event) => {
       }
       try {
         const fresh = await fetch(request);
-        if (fresh && fresh.ok && fresh.type === "basic") {
+        // status 200 only — never cache 206 Range partials emitted while
+        // streaming the studio voice-note clips
+        if (fresh && fresh.status === 200 && fresh.type === "basic") {
           cache.put(request, fresh.clone());
         }
         return fresh;
