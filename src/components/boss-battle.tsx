@@ -5,6 +5,8 @@ import type { Lesson } from "@/data/types";
 import { cn } from "@/lib/utils";
 import { Swords, Heart, Skull, Trophy, RotateCcw, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { sfx } from "@/lib/sound";
+import { Confetti } from "@/components/fx";
 
 type Phase = "intro" | "fighting" | "victory" | "defeat";
 
@@ -35,6 +37,8 @@ export function BossBattle({
     if (picked !== null) return;
     setPicked(oi);
     const correct = oi === current.answer;
+    if (correct) sfx.bossHit();
+    else sfx.heartLose();
     setTimeout(() => {
       if (correct) {
         if (stage + 1 >= totalStages) {
@@ -42,6 +46,7 @@ export function BossBattle({
             finishedRef.current = true;
             onFinish(hearts === PLAYER_HP);
           }
+          sfx.bossVictory();
           setPhase("victory");
         } else {
           setBossHit(true);
@@ -55,6 +60,7 @@ export function BossBattle({
         const nextHearts = hearts - 1;
         setHearts(nextHearts);
         if (nextHearts <= 0) {
+          sfx.defeat();
           setPhase("defeat");
         } else {
           setPicked(null);
@@ -92,9 +98,14 @@ export function BossBattle({
         {/* boss art + hp */}
         <div className={cn("mt-4 inline-block", bossHit && "animate-pop")}>
           {boss.art ? (
-            <pre className="font-mono text-[10px] sm:text-[13px] leading-tight text-red-200/90" aria-hidden>
+            <motion.pre
+              className="font-mono text-[10px] sm:text-[13px] leading-tight text-red-200/90"
+              aria-hidden
+              animate={{ y: [0, -4, 0] }}
+              transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut" }}
+            >
               {boss.art}
-            </pre>
+            </motion.pre>
           ) : null}
         </div>
 
@@ -233,6 +244,7 @@ export function BossBattle({
             animate={{ opacity: 1, scale: 1 }}
             className="rounded-lg border-2 border-emerald-500/50 bg-emerald-500/5 p-6 text-center sm:p-10"
           >
+            <Confetti fire={1} intensity={1.4} />
             <Trophy className="mx-auto h-12 w-12 text-emerald-400" aria-hidden />
             <h3 className="font-display mt-3 text-3xl uppercase text-emerald-400 glow-green sm:text-4xl">
               {boss.name} defeated

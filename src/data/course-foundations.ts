@@ -134,6 +134,11 @@ console.log(value); // 10`,
               text: "Electricity is noisy. If a wire had to hold ten precise voltage levels to represent the digits 0 through 9, tiny fluctuations would corrupt the data constantly. Two states — clearly high or clearly low — stay readable even through noise. Binary is not clever so much as it is robust.",
             },
             {
+              type: "demo",
+              demo: "binary-lab",
+              title: "bit_workshop",
+            },
+            {
               type: "p",
               text: "Your turn to think in binary. In the exercise below you will convert binary strings into ordinary numbers. Notice what the loop is doing: as you walk the string left to right, each step doubles everything you have built so far — which is exactly how place values grow. That is the whole trick, and it is why the loop is three lines long.",
             },
@@ -1136,6 +1141,11 @@ while (fuel > 0) {
               variant: "info",
               title: "DEEP DIVE",
               text: "This design is why your video call degrades instead of dying. When the network gets congested, packets arrive late or get dropped, and the call software simply makes do with fewer of them. Blurry video is the graceful fallback built into a packet-based world.",
+            },
+            {
+              type: "demo",
+              demo: "packet-run",
+              title: "packet_run",
             },
           ],
           quiz: [

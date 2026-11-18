@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { motion } from "framer-motion";
 import { getLessonRef, nextLessonRef, lessonsOf } from "@/lib/content";
 import { useAcademy, type CompleteResult } from "@/lib/store";
 import { BADGE_BY_ID, levelTitle } from "@/lib/gamify";
@@ -10,6 +11,9 @@ import { LessonBlocks } from "@/components/blocks";
 import { QuizSection } from "@/components/quiz";
 import { CodeExercise } from "@/components/code-exercise";
 import { BossBattle } from "@/components/boss-battle";
+import { AudioNotes } from "@/components/audio-notes";
+import { Confetti } from "@/components/fx";
+import { sfx } from "@/lib/sound";
 import { ArrowLeft, Clock, Zap, Check, Lock, ChevronLeft, ChevronRight, Trophy, Flame, Snowflake } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -135,12 +139,14 @@ export function LessonView({ lessonId, go }: { lessonId: string; go: (v: View) =
               if (r) setResult(r);
             }}
           />
+          <AudioNotes title={ref.lesson.title} blocks={ref.lesson.concept} />
           <LessonBlocks blocks={ref.lesson.concept} />
         </>
       ) : (
         <>
           {/* concept */}
           <section aria-label="lesson content">
+            <AudioNotes title={ref.lesson.title} blocks={ref.lesson.concept} />
             <LessonBlocks blocks={ref.lesson.concept} />
           </section>
 
@@ -277,6 +283,13 @@ function CompletionOverlay({
   onNext: () => void;
   onStay: () => void;
 }) {
+  // fires one confetti burst + fanfare the moment the overlay mounts
+  const [burst] = useState(1);
+  useEffect(() => {
+    sfx.victory();
+    if (result.newLevel) window.setTimeout(() => sfx.levelup(), 600);
+  }, [result]);
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
@@ -284,6 +297,7 @@ function CompletionOverlay({
       aria-modal="true"
       aria-label="lesson complete"
     >
+      <Confetti fire={burst} />
       <div className="w-full max-w-md rounded-lg border-2 border-primary/60 bg-card p-6 text-center shadow-[0_0_60px_-10px_rgba(34,227,148,0.4)] sm:p-8 animate-pop">
         <Trophy className="mx-auto h-12 w-12 text-primary" aria-hidden />
         <h3 className="font-display mt-3 text-3xl uppercase text-primary glow-green">
@@ -295,9 +309,14 @@ function CompletionOverlay({
         </p>
 
         {result.newLevel ? (
-          <p className="mt-3 rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 font-mono text-sm text-amber-300">
+          <motion.p
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: [0.8, 1.12, 1], opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.35 }}
+            className="mt-3 rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 font-mono text-sm text-amber-300"
+          >
             LEVEL UP — level {result.newLevel}: {levelTitle(result.newLevel)}
-          </p>
+          </motion.p>
         ) : null}
 
         {result.newBadges.length > 0 ? (

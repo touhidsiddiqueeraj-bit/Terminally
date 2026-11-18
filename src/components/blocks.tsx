@@ -3,13 +3,23 @@
 import type { Block } from "@/data/types";
 import { cn } from "@/lib/utils";
 import { Info, AlertTriangle, Lightbulb, Bot } from "lucide-react";
+import { motion } from "framer-motion";
+import { InteractiveDemo } from "@/components/demos";
 
 /** Renders lesson concept blocks — the reading part of every lesson. */
 export function LessonBlocks({ blocks }: { blocks: Block[] }) {
   return (
     <div className="space-y-5">
       {blocks.map((b, i) => (
-        <BlockView key={i} block={b} />
+        <motion.div
+          key={i}
+          initial={{ opacity: 0, y: 14 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-30px" }}
+          transition={{ duration: 0.32, ease: "easeOut", delay: Math.min(i * 0.04, 0.25) }}
+        >
+          <BlockView block={b} />
+        </motion.div>
       ))}
     </div>
   );
@@ -95,6 +105,8 @@ function BlockView({ block }: { block: Block }) {
           </table>
         </div>
       );
+    case "demo":
+      return <InteractiveDemo demo={block.demo} title={block.title} />;
     default:
       return null;
   }

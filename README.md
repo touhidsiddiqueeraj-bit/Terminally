@@ -25,6 +25,7 @@ defend your knowledge in a boss battle. Everything runs client-side: no accounts
 | ![Lesson](docs/screenshots/lesson.png) | ![Exercise](docs/screenshots/exercise.png) |
 | **Boss battles** — multi-stage combat where wrong answers cost your shield. | **Training grounds** — a free playground that works offline. |
 | ![Boss battle](docs/screenshots/boss-battle.png) | ![Playground](docs/screenshots/playground.png) |
+| **The arcade** — bit_blitz, command_rush, phishing_spotter and type_rush drill the same skills for fun, with local high scores. | **Interactive demos & audio notes** — flip real bits, turn a Caesar dial, watch a hash avalanche, fire packets — and listen to any lesson aloud. |
 | **Fully responsive** — bottom navigation and touch-first layout on mobile. | |
 | ![Mobile](docs/screenshots/mobile.png) | |
 
@@ -63,14 +64,23 @@ developer: pairing with machines, verifying their output, and owning what ships.
 
 - **boot.dev-style loop** — concept → quiz → hands-on code, in 3–6 minute nodes. Linear paths
   with boss gates beat endless video catalogs for beginners.
+- **Learn by touching** — six lessons carry interactive demos (a bit workshop, a Caesar dial,
+  an XOR pad, a hash forge, an entropy gauge, a packet run) so key concepts are *manipulated*,
+  not just read.
+- **The arcade** — bit_blitz (byte-building against the clock), command_rush (60s rapid-fire
+  trivia drawn from the real question banks), phishing_spotter (spot the look-alike domains),
+  and type_rush (type real commands, measure your WPM). Scores live on your device; no XP is
+  awarded, so the learning economy stays balanced.
+- **Audio notes** — any lesson can be listened to via the browser's built-in speech synthesis:
+  zero audio files, zero network, works offline.
 - **Post-AI curriculum** — the skills that stay valuable when AI writes your boilerplate:
   how machines represent data, how secrets actually work, how attackers think, how systems
   are architected — and the engineering craft (git, tests, CI/CD, review, judgment) that
   separates engineers from prompt writers.
 - **Offline-first** — a service worker caches the whole app; progress lives in `localStorage`.
   Load it once, then learn on a plane. The same build ships inside an Android WebView shell.
-- **Zero backend** — everything (including the sandboxed code runner) is static, which makes
-  the CI/CD story trivial: *if it builds, it ships.*
+- **Zero backend** — everything (including the sandboxed code runner, the sound engine and
+  the games) is static, which makes the CI/CD story trivial: *if it builds, it ships.*
 
 ---
 
@@ -157,8 +167,9 @@ every release tag.
 ## Tech stack
 
 Next.js 16 (App Router, static export) · React 19 · TypeScript (strict) · Tailwind CSS 4 ·
-shadcn/ui · zustand + localStorage (offline progress) · framer-motion · sandboxed iframe
-code runner · PWA service worker · Kotlin/WebView Android shell.
+shadcn/ui · zustand + localStorage (offline progress) · framer-motion · Web Audio API
+(sound engine) · speechSynthesis (audio notes) · sandboxed iframe code runner ·
+PWA service worker · Kotlin/WebView Android shell.
 
 ---
 

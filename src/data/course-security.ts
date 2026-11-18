@@ -141,6 +141,11 @@ console.log(bits(phrase, 58)); // pool 58: letters + the hyphens
               ],
             },
             {
+              type: "demo",
+              demo: "entropy-meter",
+              title: "entropy_gauge",
+            },
+            {
               type: "p",
               text: "One more failure mode ruins lives: reuse. When a password leaks from one site, attackers immediately try it everywhere else — a trick called credential stuffing, and it works because humans reuse passwords so reliably. Your one reused password becomes a skeleton key, and a single breach turns into five account takeovers before breakfast.",
             },

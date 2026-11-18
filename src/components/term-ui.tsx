@@ -180,10 +180,13 @@ export function XPBar({
       aria-valuemin={0}
       aria-valuemax={100}
     >
-      <div
-        className={cn("h-full bg-primary transition-all duration-700", colorClass)}
-        style={{ width: `${Math.max(0, Math.min(100, pct))}%` }}
-      />
+      <div className="relative h-full">
+        <div
+          className={cn("h-full bg-primary transition-all duration-700", colorClass)}
+          style={{ width: `${Math.max(0, Math.min(100, pct))}%` }}
+        />
+        {pct > 0 ? <div className="xp-shimmer pointer-events-none absolute inset-0" aria-hidden /> : null}
+      </div>
     </div>
   );
 }

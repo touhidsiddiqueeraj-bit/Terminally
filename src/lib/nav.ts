@@ -5,6 +5,7 @@ export type View =
   | { name: "course"; courseId: CourseId }
   | { name: "lesson"; lessonId: string }
   | { name: "playground" }
+  | { name: "arcade" }
   | { name: "profile" }
   | { name: "about" };
 

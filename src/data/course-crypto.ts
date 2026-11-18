@@ -118,6 +118,11 @@ console.log(atob(encoded)); // meet at dawn — no key needed`,
             },
             { type: "h", text: "Wrapping past Z" },
             {
+              type: "demo",
+              demo: "caesar-wheel",
+              title: "caesar_dial",
+            },
+            {
               type: "p",
               text: "What happens when a shift runs off the end of the alphabet? It wraps around: after Z comes A again. Computers adore this trick, because it's exactly what the modulo operator does — the percent sign in JavaScript gives you the remainder after division, and remainders naturally loop.",
             },
@@ -584,6 +589,11 @@ for (let shift = 1; shift <= 25; shift++) {
               text: "Here's the property that makes encryption possible. Take any value, XOR it with a key, and you get scrambled nonsense. XOR that nonsense with the same key again, and the original walks back out, unharmed. The operation is its own undoing — which means one key can lock and unlock.",
             },
             {
+              type: "demo",
+              demo: "xor-pad",
+              title: "xor_pad",
+            },
+            {
               type: "code",
               caption: "Encrypt, then decrypt, with the same move",
               code: `const message = 0b01001000; // the letter H, as bits
@@ -795,6 +805,11 @@ const sealed = padCipher("HELLO", "XQJZM"); // burned after one use`,
             {
               type: "p",
               text: "That last one is the avalanche effect, and it's glorious. Change one comma in a ten-megabyte document and the hash doesn't change a little — it changes completely, like a landslide triggered by one pebble. Small input change, total output chaos, every time.",
+            },
+            {
+              type: "demo",
+              demo: "hash-viz",
+              title: "hash_forge",
             },
             {
               type: "code",

@@ -5,9 +5,11 @@ import { COURSES } from "@/data/courses";
 import { lessonsOf, courseStats, nextIncomplete, getLessonRef, CONTENT_TOTALS } from "@/lib/content";
 import { levelInfo, BADGES } from "@/lib/gamify";
 import type { View } from "@/lib/nav";
+import { useArcade, ARCADE_GAMES } from "@/lib/arcade-store";
 import { courseColor, Icon, SectionHeading, StatChip, TermWindow, XPBar } from "@/components/term-ui";
-import { BookOpen, Code2, Swords, Flame, Snowflake, ChevronRight, Zap, Trophy, Brain, HelpCircle, Play } from "lucide-react";
+import { BookOpen, Code2, Swords, Flame, Snowflake, ChevronRight, Zap, Trophy, HelpCircle, Play, Gamepad2, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
 
 export function DashboardView({ go }: { go: (v: View) => void }) {
   const handle = useAcademy((s) => s.handle);
@@ -20,6 +22,8 @@ export function DashboardView({ go }: { go: (v: View) => void }) {
   const completed = new Set(Object.keys(lessons));
   const started = completed.size > 0;
   const lvl = levelInfo(xp);
+  const arcadeBest = useArcade((s) => s.bests);
+  const arcadePlays = useArcade((s) => s.plays);
 
   const lessonsDone = Object.values(lessons).length;
   const exercisesDone = Object.values(lessons).filter((r) => r.exerciseDone).length;
@@ -125,6 +129,35 @@ export function DashboardView({ go }: { go: (v: View) => void }) {
         </div>
       )}
 
+      {/* arcade teaser */}
+      <motion.button
+        type="button"
+        onClick={() => go({ name: "arcade" })}
+        initial={{ opacity: 0, y: 14 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: 0.1 }}
+        whileHover={{ y: -3 }}
+        className="group flex w-full items-center gap-4 rounded-lg border-2 border-amber-500/40 bg-amber-500/5 p-4 text-left term-focus hover:border-amber-500/70 hover:bg-amber-500/10 sm:p-5"
+      >
+        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-md border border-amber-500/40 bg-amber-500/10">
+          <Gamepad2 className="h-6 w-6 text-amber-400" aria-hidden />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
+            {arcadePlays > 0 ? "the arcade awaits" : "new — the arcade is open"}
+          </span>
+          <span className="block font-display text-xl uppercase text-amber-300 glow-amber sm:text-2xl">
+            bit_blitz · command_rush · phishing_spotter · type_rush
+          </span>
+          <span className="block truncate font-mono text-xs text-muted-foreground">
+            {ARCADE_GAMES.some((g) => arcadeBest[g.id])
+              ? `scores on record — sharpen your edge`
+              : `4 games · 0 coins required · drills the same skills you learn here`}
+          </span>
+        </span>
+        <ChevronRight className="h-6 w-6 shrink-0 text-amber-400 transition-transform group-hover:translate-x-1" aria-hidden />
+      </motion.button>
+
       {/* learning loop explainer */}
       {!started ? (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -158,12 +191,16 @@ export function DashboardView({ go }: { go: (v: View) => void }) {
             const c = courseColor(course.id);
             const stats = courseStats(course.id, new Map(Object.entries(lessons)));
             return (
-              <button
+              <motion.button
                 key={course.id}
                 type="button"
                 onClick={() => go({ name: "course", courseId: course.id })}
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.32, delay: 0.05 * i, ease: "easeOut" }}
+                whileHover={{ y: -3 }}
                 className={cn(
-                  "group relative flex flex-col rounded-lg border p-5 text-left transition-all term-focus hover:-translate-y-0.5",
+                  "group relative flex flex-col rounded-lg border p-5 text-left transition-colors term-focus",
                   c.border,
                   c.bgSoft,
                   "hover:shadow-[0_0_24px_-8px_var(--tw-shadow-color)]",
@@ -191,7 +228,7 @@ export function DashboardView({ go }: { go: (v: View) => void }) {
                     </span>
                   </div>
                 </div>
-              </button>
+              </motion.button>
             );
           })}
         </div>
@@ -199,27 +236,31 @@ export function DashboardView({ go }: { go: (v: View) => void }) {
 
       {/* stats strip */}
       <section aria-label="your stats" className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <StatTile icon={<BookOpen className="h-5 w-5" />} label="lessons cleared" value={`${lessonsDone}/${CONTENT_TOTALS.nodes}`} />
-        <StatTile icon={<Code2 className="h-5 w-5" />} label="exercises passed" value={`${exercisesDone}/${CONTENT_TOTALS.exercises}`} />
-        <StatTile icon={<Swords className="h-5 w-5" />} label="bosses slain" value={`${bossesSlain}/${CONTENT_TOTALS.bosses}`} />
-        <StatTile icon={<Brain className="h-5 w-5" />} label="perfect checks" value={`${Object.values(lessons).filter((r) => r.quizPerfect).length}`} />
+        {[
+          { icon: <BookOpen className="h-5 w-5" />, label: "lessons cleared", value: `${lessonsDone}/${CONTENT_TOTALS.nodes}` },
+          { icon: <Code2 className="h-5 w-5" />, label: "exercises passed", value: `${exercisesDone}/${CONTENT_TOTALS.exercises}` },
+          { icon: <Swords className="h-5 w-5" />, label: "bosses slain", value: `${bossesSlain}/${CONTENT_TOTALS.bosses}` },
+          { icon: <Star className="h-5 w-5" />, label: "arcade runs", value: `${arcadePlays}` },
+        ].map((t, i) => (
+          <motion.div
+            key={t.label}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.28, delay: 0.05 * i }}
+            className="rounded-md border border-border bg-card p-4"
+          >
+            <div className="flex items-center gap-2 text-primary">{t.icon}
+              <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">{t.label}</span>
+            </div>
+            <p className="mt-1 font-display text-2xl text-foreground">{t.value}</p>
+          </motion.div>
+        ))}
       </section>
 
       <p className="flex items-center gap-2 font-mono text-[11px] text-muted-foreground">
         <Play className="h-3 w-3" aria-hidden />
         everything here runs offline — your progress lives on this device
       </p>
-    </div>
-  );
-}
-
-function StatTile({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
-  return (
-    <div className="rounded-md border border-border bg-card p-4">
-      <div className="flex items-center gap-2 text-primary">{icon}
-        <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">{label}</span>
-      </div>
-      <p className="mt-1 font-display text-2xl text-foreground">{value}</p>
     </div>
   );
 }

@@ -12,7 +12,17 @@ export type Block =
   | { type: "list"; items: string[] }
   | { type: "callout"; variant: "info" | "warn" | "tip" | "ai"; title?: string; text: string }
   | { type: "ascii"; art: string }
-  | { type: "table"; headers: string[]; rows: string[][] };
+  | { type: "table"; headers: string[]; rows: string[][] }
+  | { type: "demo"; demo: DemoId; title?: string };
+
+/** Interactive demos that render live widgets inside a lesson. */
+export type DemoId =
+  | "binary-lab"
+  | "caesar-wheel"
+  | "xor-pad"
+  | "hash-viz"
+  | "entropy-meter"
+  | "packet-run";
 
 /** A multiple-choice quiz question. `answer` is the index into `options`. */
 export type QuizQuestion = {

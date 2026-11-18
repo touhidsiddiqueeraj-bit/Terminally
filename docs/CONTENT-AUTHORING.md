@@ -40,10 +40,28 @@ A course is `chapters[]`, a chapter is `lessons[]`, and each lesson is:
 | `{ type: "callout", variant, title, text }` | highlighted box — `info` / `warn` / `tip` / `ai` |
 | `{ type: "ascii", art }` | preformatted ASCII art (max 9 lines × 60 chars) |
 | `{ type: "table", headers, rows }` | comparison table |
+| `{ type: "demo", demo, title? }` | interactive live demo (see below) |
 
 Style rules the project follows: second person, concrete examples, no markdown in `text`
 (no `**`, `#`, backticks — the renderer owns the formatting), and an `AI ERA` callout where
 the topic touches the post-AI angle.
+
+## Interactive demo blocks
+
+`{ type: "demo", demo: "<id>" }` renders a live widget inside the lesson — real client-side
+logic the learner can poke at. Available ids (implemented in `src/components/demos.tsx`):
+
+| Demo id | What the learner does |
+|---|---|
+| `binary-lab` | flip 8 bits, watch decimal/hex/ASCII update, hit match-a-target challenges |
+| `caesar-wheel` | slide a shift dial, watch plaintext→ciphertext live |
+| `xor-pad` | toggle message/key bits, watch the XOR row flip |
+| `hash-viz` | edit two inputs, watch digests + avalanche bit-diff |
+| `entropy-meter` | grow a password, watch entropy + crack-time verdict |
+| `packet-run` | fire a packet across the network, watch the traceroute log |
+
+Placement rule: put the demo right after the paragraph that introduces the concept, so the
+learner reads one idea and immediately manipulates it. One demo per lesson maximum.
 
 ## Quiz questions
 

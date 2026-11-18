@@ -184,6 +184,51 @@
   animation: ta-pulse-glow 2.2s ease-in-out infinite;
 }
 
+/* streak flame flicker */
+@keyframes ta-flicker {
+  0%, 100% { transform: scale(1) rotate(-2deg); opacity: 1; }
+  25% { transform: scale(1.08) rotate(2deg); opacity: 0.9; }
+  50% { transform: scale(0.94) rotate(-1deg); opacity: 1; }
+  75% { transform: scale(1.05) rotate(3deg); opacity: 0.85; }
+}
+.animate-flicker {
+  animation: ta-flicker 1.6s ease-in-out infinite;
+  transform-origin: bottom center;
+}
+
+/* shimmer sweep on progress bars */
+@keyframes ta-shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(200%); }
+}
+.xp-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+.xp-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 0%,
+    rgba(217, 232, 222, 0.22) 45%,
+    rgba(217, 232, 222, 0.35) 50%,
+    rgba(217, 232, 222, 0.22) 55%,
+    transparent 100%
+  );
+  animation: ta-shimmer 2.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-flicker,
+  .animate-pulse-glow,
+  .xp-shimmer::after,
+  .caret::after {
+    animation: none !important;
+  }
+}
+
 /* dashed "circuit" connector for course paths */
 .circuit-line {
   background-image: linear-gradient(to bottom, var(--border) 55%, transparent 45%);

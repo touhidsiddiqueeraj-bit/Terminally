@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { viewKey, type View } from "@/lib/nav";
 import { useAcademy } from "@/lib/store";
 import { levelInfo } from "@/lib/gamify";
@@ -8,26 +8,25 @@ import { DashboardView } from "@/components/views/dashboard";
 import { CourseView } from "@/components/views/course-view";
 import { LessonView } from "@/components/views/lesson-view";
 import { PlaygroundView } from "@/components/views/playground-view";
+import { ArcadeView } from "@/components/views/arcade-view";
 import { ProfileView } from "@/components/views/profile-view";
 import { AboutView } from "@/components/views/about-view";
-import { House, Code2, User, Info, Zap, Flame } from "lucide-react";
+import { House, Code2, User, Info, Zap, Flame, Gamepad2, Volume2, VolumeX } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
-
-const SPLASH = ` ████████╗ █████╗ ██████╗ ███████╗██████╗  █████╗
- ╚══██╔══╝██╔══██╗██╔══██╗██╔════╝██╔══██╗██╔══██╗
-    ██║   ███████║██████╔╝█████╗  ██████╔╝███████║
-    ██║   ██╔══██║██╔══██╗██╔══╝  ██╔══██╗██╔══██║
-    ██║   ██║  ██║██║  ██║███████╗██║  ██║██║  ██║
-    ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝`;
+import { AnimatedNumber, BootSplash } from "@/components/fx";
+import { sfx, useSoundSettings } from "@/lib/sound";
 
 const emptySubscribe = () => () => {};
 
 export function AppShell() {
   const [view, setView] = useState<View>({ name: "dashboard" });
+  const [booted, setBooted] = useState(false);
 
   const xp = useAcademy((s) => s.xp);
   const streak = useAcademy((s) => s.streak);
+  const soundOn = useSoundSettings((s) => s.soundOn);
+  const setSoundOn = useSoundSettings((s) => s.setSoundOn);
 
   // hydration guard: false during SSR, true on the client — no flash of empty state
   const mounted = useSyncExternalStore(
@@ -38,6 +37,7 @@ export function AppShell() {
 
   function go(v: View) {
     setView(v);
+    sfx.click();
     window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
   }
 
@@ -45,7 +45,12 @@ export function AppShell() {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-background p-6">
         <pre className="font-mono text-[7px] leading-tight text-primary/80 sm:text-[10px]" aria-hidden>
-          {SPLASH}
+          {` ████████╗ █████╗ ██████╗ ███████╗██████╗  █████╗
+ ╚══██╔══╝██╔══██╗██╔══██╗██╔════╝██╔══██╗██╔══██╗
+    ██║   ███████║██████╔╝█████╗  ██████╔╝███████║
+    ██║   ██╔══██║██╔══██╗██╔══╝  ██╔══██╗██╔══██║
+    ██║   ██║  ██║██║  ██║███████╗██║  ██║██║  ██║
+    ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝`}
         </pre>
         <p className="font-mono text-xs uppercase tracking-[0.4em] text-muted-foreground">
           booting<span className="caret" aria-hidden />
@@ -54,10 +59,15 @@ export function AppShell() {
     );
   }
 
+  if (!booted) {
+    return <BootSplash onFinished={() => setBooted(true)} />;
+  }
+
   const lvl = levelInfo(xp);
 
   const navItems: Array<{ key: View["name"]; label: string; icon: React.ReactNode; view: View }> = [
     { key: "dashboard", label: "home", icon: <House className="h-5 w-5" aria-hidden />, view: { name: "dashboard" } },
+    { key: "arcade", label: "arcade", icon: <Gamepad2 className="h-5 w-5" aria-hidden />, view: { name: "arcade" } },
     { key: "playground", label: "playground", icon: <Code2 className="h-5 w-5" aria-hidden />, view: { name: "playground" } },
     { key: "profile", label: "profile", icon: <User className="h-5 w-5" aria-hidden />, view: { name: "profile" } },
     { key: "about", label: "about", icon: <Info className="h-5 w-5" aria-hidden />, view: { name: "about" } },
@@ -89,7 +99,7 @@ export function AppShell() {
                 type="button"
                 onClick={() => go(item.view)}
                 className={cn(
-                  "flex items-center gap-1.5 rounded-md px-3 py-1.5 font-mono text-xs uppercase tracking-wider term-focus",
+                  "flex items-center gap-1.5 rounded-md px-3 py-1.5 font-mono text-xs uppercase tracking-wider term-focus transition-colors",
                   view.name === item.key
                     ? "bg-primary/15 text-primary"
                     : "text-muted-foreground hover:text-foreground",
@@ -104,25 +114,45 @@ export function AppShell() {
           <div className="ml-auto flex items-center gap-2 md:ml-3" aria-label="your stats">
             <span className="flex items-center gap-1.5 rounded-md border border-border bg-card px-2 py-1 font-mono text-[11px]">
               <Zap className="h-3.5 w-3.5 text-primary" aria-hidden />
-              <span className="text-primary">{xp}</span>
+              <AnimatedNumber value={xp} className="text-primary" />
               <span className="text-muted-foreground">xp</span>
             </span>
             <span className="flex items-center gap-1.5 rounded-md border border-border bg-card px-2 py-1 font-mono text-[11px]">
               <span className="text-muted-foreground">lvl</span>
-              <span className="text-primary">{lvl.level}</span>
+              <AnimatedNumber value={lvl.level} className="text-primary" />
             </span>
             <span
               className="flex items-center gap-1 rounded-md border border-border bg-card px-2 py-1 font-mono text-[11px]"
               title={`streak: ${streak.count} days (best ${streak.best}) — freezes: ${streak.freezes}`}
             >
               <Flame
-                className={cn("h-3.5 w-3.5", streak.count > 0 ? "text-red-400" : "text-muted-foreground")}
+                className={cn(
+                  "h-3.5 w-3.5",
+                  streak.count > 0 ? "animate-flicker text-red-400" : "text-muted-foreground",
+                )}
                 aria-hidden
               />
               <span className={streak.count > 0 ? "text-red-300" : "text-muted-foreground"}>
                 {streak.count}d
               </span>
             </span>
+            <button
+              type="button"
+              onClick={() => {
+                setSoundOn(!soundOn);
+                if (!soundOn) sfx.click();
+              }}
+              className="flex h-8 w-8 items-center justify-center rounded-md border border-border bg-card term-focus hover:border-primary/50"
+              aria-pressed={soundOn}
+              aria-label={soundOn ? "mute sounds" : "unmute sounds"}
+              title={soundOn ? "sounds: on" : "sounds: off"}
+            >
+              {soundOn ? (
+                <Volume2 className="h-4 w-4 text-primary" aria-hidden />
+              ) : (
+                <VolumeX className="h-4 w-4 text-muted-foreground" aria-hidden />
+              )}
+            </button>
           </div>
         </div>
       </header>
@@ -141,6 +171,7 @@ export function AppShell() {
             {view.name === "course" ? <CourseView courseId={view.courseId} go={go} /> : null}
             {view.name === "lesson" ? <LessonView lessonId={view.lessonId} go={go} /> : null}
             {view.name === "playground" ? <PlaygroundView /> : null}
+            {view.name === "arcade" ? <ArcadeView /> : null}
             {view.name === "profile" ? <ProfileView go={go} /> : null}
             {view.name === "about" ? <AboutView /> : null}
           </motion.div>
@@ -150,7 +181,7 @@ export function AppShell() {
       {/* footer */}
       <footer className="border-t border-border py-4 pb-24 md:pb-4">
         <p className="text-center font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-          terminal_academy v1.0 — offline-first cs education — learning system inspired by boot.dev
+          terminal_academy v1.1 — offline-first cs education — demos · arcade · audio notes
         </p>
       </footer>
 
@@ -159,7 +190,7 @@ export function AppShell() {
         className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background/95 backdrop-blur md:hidden"
         aria-label="mobile navigation"
       >
-        <div className="mx-auto grid max-w-4xl grid-cols-4">
+        <div className="mx-auto grid max-w-4xl grid-cols-5">
           {navItems.map((item) => (
             <button
               key={item.key}

@@ -4,11 +4,14 @@ import { useEffect, useState } from "react";
 import type { QuizQuestion } from "@/data/types";
 import { cn } from "@/lib/utils";
 import { CheckCircle2, XCircle, ChevronRight } from "lucide-react";
+import { motion } from "framer-motion";
+import { sfx } from "@/lib/sound";
 
 type QState = {
   selected: number | null;
   revealed: boolean;
   firstTryCorrect: boolean;
+  shake: boolean;
 };
 
 export function QuizSection({
@@ -19,15 +22,17 @@ export function QuizSection({
   onFinish: (perfect: boolean) => void;
 }) {
   const [states, setStates] = useState<QState[]>(
-    questions.map(() => ({ selected: null, revealed: false, firstTryCorrect: false })),
+    questions.map(() => ({ selected: null, revealed: false, firstTryCorrect: false, shake: false })),
   );
 
   const allCorrect = states.every((s, i) => questions[i] && s.selected === questions[i].answer);
 
   useEffect(() => {
     if (questions.length && allCorrect) {
+      sfx.victory();
       onFinish(states.every((s) => s.firstTryCorrect));
     }
+     
   }, [allCorrect]);
 
   function pick(qi: number, oi: number) {
@@ -35,11 +40,21 @@ export function QuizSection({
       const q = questions[qi];
       const cur = prev[qi];
       if (cur.selected === q.answer) return prev; // question already solved
+      const correct = oi === q.answer;
+      if (correct) {
+        sfx.correct();
+      } else {
+        sfx.wrong();
+        window.setTimeout(() => {
+          setStates((p2) => p2.map((s, j) => (j === qi ? { ...s, shake: false } : s)));
+        }, 500);
+      }
       const next = [...prev];
       next[qi] = {
         selected: oi,
         revealed: true,
-        firstTryCorrect: cur.firstTryCorrect || (oi === q.answer && cur.selected === null),
+        firstTryCorrect: cur.firstTryCorrect || (correct && cur.selected === null),
+        shake: !correct,
       };
       return next;
     });
@@ -51,9 +66,15 @@ export function QuizSection({
         const st = states[qi];
         const solved = st.selected === q.answer;
         return (
-          <div
+          <motion.div
             key={qi}
-            className="rounded-md border border-border bg-card p-4 sm:p-5"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.25, delay: qi * 0.06 }}
+            className={cn(
+              "rounded-md border border-border bg-card p-4 sm:p-5",
+              st.shake && "animate-shake",
+            )}
             role="group"
             aria-label={`Question ${qi + 1}`}
           >
@@ -126,7 +147,7 @@ export function QuizSection({
                 {q.explain}
               </div>
             ) : null}
-          </div>
+          </motion.div>
         );
       })}
       <p className="flex items-center gap-1.5 font-mono text-xs text-muted-foreground">
