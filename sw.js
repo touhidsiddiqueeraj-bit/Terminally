@@ -9,7 +9,7 @@
  * (e.g. GitHub Pages project sites).
  */
 
-const CACHE_NAME = "terminal-academy-v3";
+const CACHE_NAME = "terminal-academy-v4";
 // Scope always ends with "/" — e.g. "/" or "/Terminally/".
 const BASE = new URL(self.registration.scope).pathname;
 const CORE_ASSETS = [
