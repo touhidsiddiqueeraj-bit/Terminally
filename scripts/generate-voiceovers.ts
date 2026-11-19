@@ -9,11 +9,12 @@
  */
 import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { dirname, join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { COURSES } from "../src/data/courses";
 import type { Lesson } from "../src/data/types";
 
-const ROOT = resolve(import.meta.dir, "..");
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const CACHE = join(process.env.TMPDIR ?? "/tmp", "terminal-voiceover");
 const OUT = join(CACHE, "audio");
 for (const dir of [join(OUT, "lessons"), join(OUT, "bosses"), join(CACHE, "wav")]) mkdirSync(dir, { recursive: true });
